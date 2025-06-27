@@ -1,66 +1,247 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏛️ Sistem Pariwisata Kabupaten Madiun
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+<img src="https://img.shields.io/badge/Laravel-11.x-red?style=for-the-badge&logo=laravel" alt="Laravel">
+<img src="https://img.shields.io/badge/PHP-8.2+-blue?style=for-the-badge&logo=php" alt="PHP">
+<img src="https://img.shields.io/badge/MySQL-8.0+-orange?style=for-the-badge&logo=mysql" alt="MySQL">
+<img src="https://img.shields.io/badge/Bootstrap-5.3-purple?style=for-the-badge&logo=bootstrap" alt="Bootstrap">
 </p>
 
-## About Laravel
+## 📖 Tentang Proyek
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Sistem Pariwisata Kabupaten Madiun** adalah aplikasi web yang dirancang untuk memudahkan wisatawan dalam menjelajahi dan memesan destinasi wisata di Kabupaten Madiun. Sistem ini menyediakan platform terintegrasi untuk booking tiket, manajemen destinasi wisata, dan layanan terkait pariwisata.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### ✨ Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- 🎫 **Sistem Booking Online** - Pemesanan tiket destinasi wisata dengan pembayaran digital
+- 💳 **Integrasi Midtrans** - Payment gateway untuk transaksi yang aman
+- 📱 **QR Code Tiket** - Tiket digital dengan QR code untuk validasi masuk
+- ⭐ **Review & Rating** - Sistem ulasan dan rating untuk destinasi wisata
+- 🔍 **Smart Search** - Pencarian destinasi dengan fuzzy search algorithm
+- 📊 **Dashboard Admin** - Panel administrasi untuk manajemen data
+- 📈 **Laporan Analytics** - Laporan pengunjung dan revenue analytics
+- 🗺️ **Maps Integration** - Integrasi peta untuk lokasi destinasi
+- 📱 **Responsive Design** - Tampilan yang optimal di semua perangkat
 
-## Learning Laravel
+## 🛠️ Teknologi yang Digunakan
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Backend
+- **Laravel 11.x** - PHP Framework
+- **MySQL** - Database Management System
+- **Eloquent ORM** - Database abstraction layer
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Frontend
+- **HTML5 & CSS3** - Markup & Styling
+- **JavaScript ES6+** - Interactive functionality
+- **Bootstrap 5** - CSS Framework
+- **Font Awesome** - Icon library
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Integrasi Third-Party
+- **Midtrans** - Payment Gateway
+- **QR Code Generator** - Untuk tiket digital
+- **Google Maps API** - Integrasi peta (opsional)
 
-## Laravel Sponsors
+## 🚀 Instalasi
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Prasyarat
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL >= 8.0
+- Web Server (Apache/Nginx)
 
-### Premium Partners
+### Langkah Instalasi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+1. **Clone Repository**
+```bash
+git clone https://github.com/Adhitya-02/DPM-Website.git
+cd DPM-Website
+```
 
-## Contributing
+2. **Install Dependencies**
+```bash
+# Install PHP dependencies
+composer install
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Install Node dependencies
+npm install
+```
 
-## Code of Conduct
+3. **Environment Setup**
+```bash
+# Copy environment file
+cp .env.example .env
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Generate application key
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+4. **Database Configuration**
+Edit file `.env` dan sesuaikan konfigurasi database:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=db_pariwisata
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. **Midtrans Configuration**
+Tambahkan konfigurasi Midtrans di `.env`:
+```env
+MIDTRANS_SERVER_KEY=your_server_key
+MIDTRANS_CLIENT_KEY=your_client_key
+```
 
-## License
+6. **Database Migration**
+```bash
+# Run migrations
+php artisan migrate
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Seed initial data (optional)
+php artisan db:seed
+```
+
+7. **Storage Link**
+```bash
+php artisan storage:link
+```
+
+8. **Compile Assets**
+```bash
+npm run build
+```
+
+9. **Start Development Server**
+```bash
+php artisan serve
+```
+
+Aplikasi akan berjalan di `http://localhost:8000`
+
+## 📁 Struktur Proyek
+
+```
+DPM-Website/
+├── app/
+│   ├── Http/Controllers/     # Controllers
+│   ├── Models/              # Eloquent Models
+│   └── Providers/           # Service Providers
+├── database/
+│   ├── migrations/          # Database migrations
+│   └── seeders/            # Database seeders
+├── resources/
+│   ├── views/              # Blade templates
+│   └── assets/             # CSS, JS, images
+├── routes/
+│   └── web.php             # Web routes
+├── public/                 # Public assets
+└── storage/               # File storage
+```
+
+## 🎯 Cara Penggunaan
+
+### Untuk Pengunjung/Wisatawan:
+1. **Browse Destinasi** - Jelajahi berbagai destinasi wisata yang tersedia
+2. **Search & Filter** - Gunakan fitur pencarian untuk menemukan destinasi favorit
+3. **Booking Tiket** - Pesan tiket dengan mudah melalui sistem online
+4. **Pembayaran** - Lakukan pembayaran aman melalui Midtrans
+5. **QR Code Tiket** - Dapatkan tiket digital dengan QR code
+6. **Review** - Berikan ulasan dan rating setelah berkunjung
+
+### Untuk Administrator:
+1. **Login Admin** - Akses panel admin di `/admin/login`
+2. **Manajemen Destinasi** - Tambah, edit, hapus destinasi wisata
+3. **Manajemen User** - Kelola data pengguna dan tenant
+4. **Monitor Booking** - Pantau pemesanan dan transaksi
+5. **Laporan** - Lihat analytics dan laporan keuangan
+
+## 🧪 Testing
+
+```bash
+# Run PHPUnit tests
+php artisan test
+
+# Run specific test file
+php artisan test tests/Feature/BookingTest.php
+```
+
+## 📊 Database Schema
+
+### Tabel Utama:
+- `users` - Data pengguna
+- `tenant` - Data destinasi wisata
+- `tipe_tenant` - Kategori destinasi (wisata, hotel, restoran)
+- `user_tenant_booking` - Data booking/pemesanan
+- `user_tenant_rating` - Rating dari pengguna
+- `ulasan_tenant` - Ulasan/review
+- `gambar_tenant` - Gambar destinasi
+
+## 🔧 Konfigurasi Tambahan
+
+### SSL Configuration (Development)
+Jika mengalami masalah SSL dengan Midtrans:
+```env
+CURL_CA_BUNDLE_PATH=
+SSL_VERIFY_PEER=false
+SSL_VERIFY_HOST=false
+```
+
+### File Upload Limits
+Sesuaikan `php.ini` untuk upload gambar:
+```ini
+upload_max_filesize = 10M
+post_max_size = 10M
+```
+
+## 🤝 Kontribusi
+
+Kami menyambut kontribusi dari komunitas! Silakan ikuti langkah berikut:
+
+1. Fork repository ini
+2. Buat branch feature (`git checkout -b feature/AmazingFeature`)
+3. Commit perubahan (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+## 📝 Changelog
+
+### v1.0.0 (2024)
+- ✅ Sistem booking online
+- ✅ Integrasi Midtrans payment
+- ✅ QR Code tiket digital
+- ✅ Review & rating system
+- ✅ Admin dashboard
+- ✅ Responsive design
+
+## 🐛 Bug Reports & Feature Requests
+
+Jika Anda menemukan bug atau ingin mengusulkan fitur baru, silakan buat issue di [GitHub Issues](https://github.com/Adhitya-02/DPM-Website/issues).
+
+## 📄 License
+
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+
+## 👨‍💻 Developer
+
+- **Adhitya** - *Lead Developer* - [@Adhitya-02](https://github.com/Adhitya-02)
+
+## 📞 Kontak
+
+- **Email**: -
+- **GitHub**: [@Adhitya-02](https://github.com/Adhitya-02)
+- **Repository**: [DPM-Website](https://github.com/Adhitya-02/DPM-Website)
+
+## 🙏 Acknowledgments
+
+- [Laravel](https://laravel.com) - The PHP Framework for Web Artisans
+- [Midtrans](https://midtrans.com) - Payment Gateway Indonesia
+- [Bootstrap](https://getbootstrap.com) - CSS Framework
+- [Font Awesome](https://fontawesome.com) - Icon Library
+
+---
+
+<p align="center">
+Dibuat dengan ❤️ untuk memajukan pariwisata Kabupaten Madiun
+</p>
