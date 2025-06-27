@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Tenant;
 use App\Models\UserTenant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -95,48 +96,60 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
+        
+        // Jika request untuk ubah password
+        if ($request->has('password') && $request->filled('password')) {
+            
+            // Validasi untuk ubah password
+            $request->validate([
+                'current_password' => 'required',
+                'password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/',
+                    'confirmed'
+                ],
+                'password_confirmation' => 'required|same:password'
+            ], [
+                'current_password.required' => 'Password saat ini wajib diisi.',
+                'password.required' => 'Password baru wajib diisi.',
+                'password.min' => 'Password baru minimal 8 karakter.',
+                'password.regex' => 'Password baru harus mengandung huruf besar, huruf kecil, angka, dan karakter khusus.',
+                'password.confirmed' => 'Konfirmasi password tidak cocok.',
+                'password_confirmation.required' => 'Konfirmasi password wajib diisi.',
+                'password_confirmation.same' => 'Konfirmasi password harus sama dengan password baru.'
+            ]);
+    
+            // Verifikasi password saat ini
+            if (!Hash::check($request->current_password, $user->password)) {
+                return redirect()->back()->withErrors(['current_password' => 'Password saat ini salah.'])->withInput();
+            }
+    
+            // Update password
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+    
+            return redirect()->back()->with('success', 'Password berhasil diubah. Silakan login ulang dengan password baru.');
+        }
+    
+        // Jika request untuk update data user lain
         $req = $request->all();
         
-        try {
-            // Handle password update
-            if (isset($req['password']) && !empty($req['password'])) {
-                $req['password'] = bcrypt($req['password']);
-                $user->update($req);
-                return redirect()->back()->with('success', 'Berhasil merubah password user.');
-            }
-
-            // Handle tenant assignment
-            if (isset($req['tenant'])) {
-                // Delete existing tenant relationship
-                UserTenant::where('user_id', $id)->delete();
-                
-                // Create new tenant relationship if tenant is selected
-                if ($req['tenant'] && $req['tenant'] != "") {
-                    UserTenant::create([
-                        'user_id' => $id, 
-                        'tenant_id' => $req['tenant']
-                    ]);
-                }
-                
-                // Remove tenant from user data before updating user
-                unset($req['tenant']);
-            }
-
-            // Remove password from update data if it's empty
-            if (isset($req['password']) && empty($req['password'])) {
-                unset($req['password']);
-            }
-
-            // Update user data
+        if (isset($req['tenant'])) {
+            UserTenant::where('user_id', $id)->delete();
+            UserTenant::create(['user_id' => $id, 'tenant_id' => $req['tenant']]);
+            unset($req['tenant']);
             $user->update($req);
             
-            return redirect()->back()->with('success', 'Berhasil mengubah data user.');
-            
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->back()->with('success', 'Berhasil mengubah data user');
+        } else {
+            unset($req['tenant']);
+            $user->update($req);
+            return redirect()->back()->with('success', 'Berhasil mengubah data user');
         }
     }
-
     /**
      * Remove the specified resource from storage.
      */
