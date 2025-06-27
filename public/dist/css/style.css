@@ -1,0 +1,19 @@
+button {
+    font-weight: bold;
+    background-color: #005eff !important;
+    color: #fff;
+    border: none;
+}
+
+button:hover {
+    background-color: #005eff!important;
+}
+
+.text-center img {
+    border-radius: 50%; 
+    border: 2px solid #000000; 
+}
+
+.text-login {
+    font-size: 20px;
+}
