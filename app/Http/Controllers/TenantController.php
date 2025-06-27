@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\Tenant;
 use App\Models\TipeTenant;
 use App\Models\GambarTenant;
 use App\Models\UserTenantBooking;
 use App\Models\UserTenantRating;
 use App\Models\UlasanTenant;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class TenantController extends Controller
@@ -41,35 +42,41 @@ class TenantController extends Controller
         try {
             // Validasi data
             $request->validate([
-                'nama' => 'required|string|max:255|unique:tenant,nama',
-                'deskripsi' => 'required|string',
-                'alamat' => 'required|string|max:500',
-                'tipe_tenant_id' => 'required|exists:tipe_tenant,id',
-                'harga' => 'nullable|numeric|min:0',
-                'latitude' => 'nullable|numeric|between:-90,90',
-                'longitude' => 'nullable|numeric|between:-180,180',
-            ], [
-                'nama.required' => 'Nama tenant wajib diisi.',
-                'nama.unique' => 'Nama tenant sudah terdaftar.',
-                'deskripsi.required' => 'Deskripsi wajib diisi.',
-                'alamat.required' => 'Alamat wajib diisi.',
-                'tipe_tenant_id.required' => 'Tipe tenant wajib dipilih.',
-                'tipe_tenant_id.exists' => 'Tipe tenant tidak valid.',
-                'harga.numeric' => 'Harga harus berupa angka.',
-                'harga.min' => 'Harga tidak boleh negatif.',
-                'latitude.between' => 'Latitude harus antara -90 sampai 90.',
-                'longitude.between' => 'Longitude harus antara -180 sampai 180.',
+                'nama' => 'required|unique:tenant,nama',
+                'deskripsi' => 'required',
+                'alamat' => 'required',
+                'tipe_tenant_id' => 'required',
             ]);
 
-            // Simpan data tenant
-            $tenant = Tenant::create($request->all());
+            // Gunakan DB::table karena struktur timestamp tidak standar Laravel
+            $result = DB::table('tenant')->insert([
+                'nama' => $request->nama,
+                'alamat' => $request->alamat,
+                'deskripsi' => $request->deskripsi,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'tipe_tenant_id' => $request->tipe_tenant_id,
+                'harga' => $request->harga ?? 0,
+                'is_status_aktif' => $request->is_status_aktif ?? 1,
+                'status' => $request->status ?? 'aktif',
+                'nama_pengelola' => $request->nama_pengelola ?? '',
+                'created_at' => time(), // Unix timestamp untuk int(11)
+                'update_at' => time(),  // Unix timestamp untuk int(11)
+            ]);
 
-            return redirect()->back()->with('success', 'Tenant berhasil ditambahkan.');
+            if ($result) {
+                return redirect()->back()->with('success', 'Tenant berhasil ditambahkan.');
+            } else {
+                return redirect()->back()->withErrors(['error' => 'Gagal menyimpan data.'])->withInput();
+            }
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            if (isset($e->errors()['nama'])) {
+                return redirect()->back()->withErrors(['nama' => 'Nama tenant sudah terdaftar.'])->withInput();
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage())->withInput();
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -90,7 +97,7 @@ class TenantController extends Controller
         $averageRating = $tenant->ratings->avg('rating') ?? 0;
         $totalReviews = $tenant->ratings->count();
         $totalBookings = $tenant->bookings->count();
-        $totalRevenue = $tenant->bookings->where('status_pembayaran', 1)->sum(function($booking) {
+        $totalRevenue = $tenant->bookings->where('status_pembayaran', 1)->sum(function($booking) use ($tenant) {
             return $booking->jumlah * $tenant->harga;
         });
 
@@ -113,38 +120,42 @@ class TenantController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $tenant = Tenant::findOrFail($id);
-
-            // Validasi data
+            // Validasi untuk update (exclude current id untuk unique)
             $request->validate([
-                'nama' => 'required|string|max:255|unique:tenant,nama,' . $id,
-                'deskripsi' => 'required|string',
-                'alamat' => 'required|string|max:500',
-                'tipe_tenant_id' => 'required|exists:tipe_tenant,id',
-                'harga' => 'nullable|numeric|min:0',
-                'latitude' => 'nullable|numeric|between:-90,90',
-                'longitude' => 'nullable|numeric|between:-180,180',
-            ], [
-                'nama.required' => 'Nama tenant wajib diisi.',
-                'nama.unique' => 'Nama tenant sudah terdaftar.',
-                'deskripsi.required' => 'Deskripsi wajib diisi.',
-                'alamat.required' => 'Alamat wajib diisi.',
-                'tipe_tenant_id.required' => 'Tipe tenant wajib dipilih.',
-                'tipe_tenant_id.exists' => 'Tipe tenant tidak valid.',
-                'harga.numeric' => 'Harga harus berupa angka.',
-                'harga.min' => 'Harga tidak boleh negatif.',
-                'latitude.between' => 'Latitude harus antara -90 sampai 90.',
-                'longitude.between' => 'Longitude harus antara -180 sampai 180.',
+                'nama' => 'required|unique:tenant,nama,' . $id,
+                'deskripsi' => 'required',
+                'alamat' => 'required',
+                'tipe_tenant_id' => 'required',
             ]);
 
-            $tenant->update($request->all());
+            // Update menggunakan DB::table untuk menghindari masalah timestamp
+            $result = DB::table('tenant')->where('id', $id)->update([
+                'nama' => $request->nama,
+                'alamat' => $request->alamat,
+                'deskripsi' => $request->deskripsi,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'tipe_tenant_id' => $request->tipe_tenant_id,
+                'harga' => $request->harga ?? 0,
+                'is_status_aktif' => $request->is_status_aktif ?? 1,
+                'status' => $request->status ?? 'aktif',
+                'nama_pengelola' => $request->nama_pengelola ?? '',
+                'update_at' => time(), // Unix timestamp untuk int(11)
+            ]);
 
-            return redirect()->back()->with('success', 'Tenant berhasil diperbarui.');
+            if ($result !== false) {
+                return redirect()->back()->with('success', 'Tenant berhasil diperbarui.');
+            } else {
+                return redirect()->back()->withErrors(['error' => 'Gagal memperbarui data.'])->withInput();
+            }
             
         } catch (\Illuminate\Validation\ValidationException $e) {
+            if (isset($e->errors()['nama'])) {
+                return redirect()->back()->withErrors(['nama' => 'Nama tenant sudah terdaftar.'])->withInput();
+            }
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage())->withInput();
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat memperbarui data: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -154,12 +165,10 @@ class TenantController extends Controller
     public function destroy(string $id)
     {
         try {
-            $tenant = Tenant::findOrFail($id);
-            
             // Check if tenant has bookings
             $bookingCount = UserTenantBooking::where('tenant_id', $id)->count();
             if ($bookingCount > 0) {
-                return redirect()->back()->with('error', 'Tidak dapat menghapus tenant yang memiliki booking.');
+                return redirect()->back()->withErrors(['error' => 'Tidak dapat menghapus tenant yang memiliki booking.']);
             }
 
             // Delete related data first
@@ -175,13 +184,13 @@ class TenantController extends Controller
                 $image->delete();
             }
 
-            // Delete tenant
-            $tenant->delete();
+            // Delete tenant menggunakan DB::table
+            DB::table('tenant')->where('id', $id)->delete();
             
             return redirect()->back()->with('success', 'Tenant berhasil dihapus.');
             
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menghapus tenant: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus tenant: ' . $e->getMessage()]);
         }
     }
 
@@ -191,19 +200,25 @@ class TenantController extends Controller
     public function updateStatus(Request $request, $id)
     {
         try {
-            $tenant = Tenant::findOrFail($id);
-            $tenant->update(['status' => $request->status]);
+            $result = DB::table('tenant')->where('id', $id)->update([
+                'status' => $request->status,
+                'update_at' => time(), // Unix timestamp untuk int(11)
+            ]);
             
-            $statusText = $request->status ? 'diaktifkan' : 'dinonaktifkan';
-            return redirect()->back()->with('success', "Tenant berhasil {$statusText}.");
+            if ($result) {
+                $statusText = $request->status ? 'diaktifkan' : 'dinonaktifkan';
+                return redirect()->back()->with('success', "Tenant berhasil {$statusText}.");
+            } else {
+                return redirect()->back()->withErrors(['error' => 'Gagal mengubah status.']);
+            }
             
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat mengubah status: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Terjadi kesalahan saat mengubah status: ' . $e->getMessage()]);
         }
     }
 
     /**
-     * Get tenant statistics
+     * Get tenant statistics for API
      */
     public function getStatistics($id)
     {
