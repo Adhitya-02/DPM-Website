@@ -64,6 +64,11 @@ class HomeController extends Controller
 
     public function booking()
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melakukan booking.');
+        }
+
         $tenant = Tenant::where('tipe_tenant_id', 1)->get();
         return view('home.booking', compact('tenant'));
     }
@@ -75,6 +80,11 @@ class HomeController extends Controller
 
     public function booking_post(Request $request)
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melakukan booking.');
+        }
+
         $id_pariwisata = $request->get('tenant_id');
         $tanggal = $request->get('tanggal_pemesanan');
         $jumlah_tiket = $request->get('jumlah_tiket');
@@ -156,17 +166,32 @@ class HomeController extends Controller
 
     public function tanggal_pemesanan(Request $request)
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melakukan booking.');
+        }
+
         $id_pariwisata = $request->get('id_pariwisata');
         return view('home.tanggal_pemesanan', compact('id_pariwisata'));
     }
 
     public function detail_pemesanan($id)
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melihat detail pemesanan.');
+        }
+
         return view('home.detail_pemesanan');
     }
 
     public function tiket_qr_code()
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melihat tiket.');
+        }
+
         $id = request()->get('id');
         $data = UserTenantBooking::where('id', $id)->firstOrFail();
         $tenant = Tenant::where('id', $data->tenant_id)->first();
@@ -181,6 +206,11 @@ class HomeController extends Controller
 
     public function riwayat_pemesanan()
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melihat riwayat pemesanan.');
+        }
+
         $data = UserTenantBooking::where('user_id', Auth::user()->id)->get();
         return view('home.riwayat_pemesanan', compact('data'));
     }
@@ -229,6 +259,11 @@ class HomeController extends Controller
 
     public function ulasan(Request $request)
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk memberikan ulasan.');
+        }
+
         // $request->validate([
         //     'tenant_id' => 'required|exists:tenant,id',
         //     'rating' => 'required|integer|min:1|max:5',
@@ -253,42 +288,13 @@ class HomeController extends Controller
             ->with('success', 'Ulasan dan rating berhasil disimpan.');
     }
 
-    // public function editUlasan($id)
-    // {
-    //     $ulasan = UlasanTenant::where('id', $id)->where('user_id', auth()->user()->id)->firstOrFail();
-    //     $rating = UserTenantRating::where('tenant_id', $ulasan->tenant_id)->where('user_id', auth()->user()->id)->first();
-
-    //     return view('home.tiket_qr_code', compact('ulasan', 'rating'));
-    // }
-
-    // public function updateUlasan(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'rating' => 'required|integer|min:1|max:5',
-    //         'komentar' => 'required|string|max:1000',
-    //     ]);
-
-    //     $ulasan = UlasanTenant::where('id', $id)->where('user_id', auth()->user()->id)->firstOrFail();
-    //     $rating = UserTenantRating::where('tenant_id', $ulasan->tenant_id)->where('user_id', auth()->user()->id)->first();
-
-    //     // Update rating
-    //     if ($rating) {
-    //         $rating->update([
-    //             'rating' => $request->rating,
-    //         ]);
-    //     }
-
-    //     // Update ulasan
-    //     $ulasan->update([
-    //         'komentar' => $request->komentar,
-    //     ]);
-
-    //     return redirect()->route('detail_pariwisata', ['id' => $ulasan->tenant_id])
-    //         ->with('success', 'Ulasan dan rating berhasil diperbarui.');
-    // }
-
     public function deleteUlasan($id)
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu.');
+        }
+
         $ulasan = UlasanTenant::where('id', $id)->where('user_id', Auth::user()->id)->firstOrFail();
         $rating = UserTenantRating::where('tenant_id', $ulasan->tenant_id)->where('user_id', Auth::user()->id)->first();
 
@@ -303,16 +309,6 @@ class HomeController extends Controller
         return redirect()->route('detail_pariwisata', ['id' => $ulasan->tenant_id])
             ->with('success', 'Ulasan dan rating berhasil dihapus.');
     }
-
-    // public function tulis_ulasan()
-    // {
-    //     return view('home.tulis_ulasan');
-    // }
-
-    // public function ulasan_posting()
-    // {
-    //     return view('home.ulasan_posting');
-    // }
 
     public function login()
     {
@@ -331,14 +327,23 @@ class HomeController extends Controller
 
     public function profile()
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk melihat profil.');
+        }
+
         return view('home.profile');
     }
 
     public function edit_profile()
     {
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('user.login')->with('error', 'Silakan login terlebih dahulu untuk mengedit profil.');
+        }
+
         return view('home.edit_profile');
     }
-
 
     public function midtrans(Request $request)
     {
