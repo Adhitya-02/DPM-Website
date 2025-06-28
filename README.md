@@ -225,7 +225,8 @@ Proyek ini dilisensikan di bawah [MIT License](LICENSE).
 
 ## 👨‍💻 Developer
 
-- **Adhitya** - *Lead Developer* - [@Adhitya-02](https://github.com/Adhitya-02)
+- **Shenia** - *Backend Developer* - [@shenialusi](https://github.com/shenialusi)
+- **Adhitya** - *Frontend Developer* - [@Adhitya-02](https://github.com/Adhitya-02)
 
 ## 📞 Kontak
 
