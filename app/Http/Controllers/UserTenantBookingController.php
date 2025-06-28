@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Models\Tenant;
+use Illuminate\Routing\Controller;
 use App\Models\User;
 use App\Models\UserTenantBooking;
 use Illuminate\Http\Request;
