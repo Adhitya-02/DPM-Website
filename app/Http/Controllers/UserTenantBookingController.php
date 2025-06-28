@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 use App\Models\Tenant;
-use Illuminate\Routing\Controller;
+use Illuminate\Routing\Controller; // Import yang hilang
 use App\Models\User;
 use App\Models\UserTenantBooking;
 use Illuminate\Http\Request;
 use Midtrans\Config;
 use Midtrans\Snap;
-
-
+use Illuminate\Support\Facades\Log;
 
 class UserTenantBookingController extends Controller
 {
@@ -43,40 +42,56 @@ class UserTenantBookingController extends Controller
      */
     public function store(Request $request)
     {
+        try {
+            $data = $request->all();
+            $data['status'] = 2;
+            $data['user_id'] = 10;
+            $data['status_pembayaran'] = 0; // Tambahkan status pembayaran default
+            $data['kode_booking'] = $this->generateBookingCode();
+            
+            // Buat booking dulu
+            $user_tenant_boo = UserTenantBooking::create($data);
+            
+            // Cek apakah booking berhasil dibuat
+            if (!$user_tenant_boo) {
+                return redirect()->back()->with('error', 'Gagal membuat booking');
+            }
 
-        $data = $request->all();
-        $data['status'] = 2;
-        $data['user_id'] = 10;
-        $data['kode_booking'] = $this->generateBookingCode();
-        $user_tenant_boo = UserTenantBooking::create($data);
+            // Jika ada request untuk pembayaran via Midtrans
+            if ($request->has('use_payment') || env('AUTO_CREATE_MIDTRANS', false)) {
+                try {
+                    // Call API Midtrans to create payment flow
+                    Config::$serverKey = env('MIDTRANS_SERVER_KEY', '');
+                    Config::$isProduction = false;
+                    Config::$isSanitized = true;
+                    Config::$is3ds = true;
 
-        // Call API Midtrans to create payment flow
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY', '');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+                    $tenant = Tenant::where('id', $data['tenant_id'])->first();
 
-        $tenant = Tenant::where('id', $data['tenant_id'])->first();
+                    if ($tenant) {
+                        $params = [
+                            'transaction_details' => [
+                                'order_id' => $user_tenant_boo->id,
+                                'gross_amount' => (int)$data['jumlah'] * $tenant->harga,
+                            ],
+                        ];
 
-        $params = [
-            'transaction_details' => [
-                'order_id' => $user_tenant_boo->id,
-                'gross_amount' => (int)$data['jumlah'] * $tenant->harga,
-            ],
-            // 'customer_details' => [
-            //     'first_name' => $request->first_name,
-            //     'last_name' => $request->last_name,
-            //     'email' => $request->email,
-            //     'phone' => $request->phone,
-            // ],
-        ];
+                        $snapToken = Snap::getSnapToken($params);
+                        $user_tenant_boo->update(['snap_token' => $snapToken]);
+                    }
+                } catch (\Exception $e) {
+                    // Log error tapi tetap lanjut karena booking sudah berhasil
+                    Log::error('Midtrans Error: ' . $e->getMessage());
+                    // Booking tetap tersimpan tapi tanpa snap token
+                }
+            }
 
-        $snapToken = Snap::getSnapToken($params);
-
-        $user_tenant_boo->update(['snap_token' => $snapToken]);
-        $user_tenant_boo->save();
-
-        return redirect()->back();
+            return redirect()->back()->with('success', 'Booking berhasil ditambahkan');
+            
+        } catch (\Exception $e) {
+            Log::error('Store Booking Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menyimpan booking: ' . $e->getMessage());
+        }
     }
     
     private function generateBookingCode()
@@ -119,10 +134,12 @@ class UserTenantBookingController extends Controller
         UserTenantBooking::where('id', $id)->delete();
         return redirect()->back();
     }
+    
     public function scan()
     {
         return view('user_tenant_booking.scan');
     }
+    
     public function scanStore(Request $request)
     {
         $data = $request->all();

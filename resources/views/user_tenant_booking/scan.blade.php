@@ -110,7 +110,7 @@
     </section>
 </div>
 
-<!-- Loading Modal -->
+<!-- Loading Modal
 <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -122,7 +122,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 @endsection
 
 @section('script')
