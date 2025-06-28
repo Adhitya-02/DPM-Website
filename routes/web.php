@@ -5,9 +5,9 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserTenantBookingController;
 use App\Http\Controllers\TenantReportController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 
 Route::get('/admin/login', [AuthController::class, 'index'])->name('login');
@@ -16,8 +16,15 @@ Route::post('/midtrans', [HomeController::class, 'midtrans'])->name('midtrans');
 
 // Route::resource('login',AuthController::class);
 Route::get('logout', [AuthController::class, 'logout'])->name('logout');
+
 Route::middleware('auth')->group(function () {
-    Route::resource('dashboard', DashboardController::class);
+    // Dashboard Routes
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard/data', [DashboardController::class, 'getData'])->name('dashboard.data');
+    Route::get('/dashboard/chart', [DashboardController::class, 'getChartData'])->name('dashboard.chart');
+    Route::get('/dashboard/export', [DashboardController::class, 'exportReport'])->name('dashboard.export');
+    
+    // Other Admin Routes
     Route::resource('user_tenant_boo', UserTenantBookingController::class);
     Route::resource('user', UserController::class);
     Route::resource('tenant', TenantController::class);

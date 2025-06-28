@@ -95,7 +95,6 @@
             <i class="fas fa-key mr-3"></i>
             <div>
                 <h3 class="card-title mb-0">Ubah Password Admin</h3>
-                <small class="text-white-50">Ganti password untuk meningkatkan keamanan akun</small>
             </div>
         </div>
     </div>

@@ -35,10 +35,12 @@ class UserController extends Controller
      */    
     public function store(Request $request)
     {
-        // Validate the request
+        // Validate the request - PERBAIKAN DI SINI
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:user,email',  // GANTI dari users ke user
+            'no_hp' => 'nullable|string|max:15',
+            'tipe_user_id' => 'required|integer',
             'tenant_id' => 'nullable|exists:tenant,id'
         ]);
 
@@ -150,6 +152,7 @@ class UserController extends Controller
             return redirect()->back()->with('success', 'Berhasil mengubah data user');
         }
     }
+    
     /**
      * Remove the specified resource from storage.
      */

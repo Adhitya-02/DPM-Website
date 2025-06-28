@@ -72,7 +72,7 @@
         .nav-sidebar .nav-link:hover {
             background: rgba(255,255,255,0.2) !important;
             color: white !important;
-            transform: translateX(5px);
+            transform: translateX(3px);
         }
 
         .nav-sidebar .nav-link.active {
@@ -86,6 +86,11 @@
             margin-right: 8px !important;
             width: 16px !important;
             text-align: center !important;
+            transition: color 0.3s ease !important;
+        }
+
+        .nav-sidebar .nav-link:hover .nav-icon {
+            color: white !important;
         }
 
         /* Content Wrapper */
@@ -207,6 +212,18 @@
             animation: slideIn 0.5s ease-out;
         }
 
+        /* Professional hover effects */
+        .nav-sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.15) !important;
+            border-left: 3px solid var(--secondary-green);
+            padding-left: calc(0.75rem - 3px);
+        }
+
+        .nav-sidebar .nav-link.active {
+            border-left: 3px solid white;
+            padding-left: calc(0.75rem - 3px);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .content {
@@ -239,6 +256,12 @@
         .sidebar .nav {
             padding: 0 !important;
         }
+
+        /* Professional navigation styling */
+        .nav-sidebar .nav-item .nav-link p {
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
     </style>
     
     @yield('script_top')
@@ -249,7 +272,7 @@
         <!-- Main Sidebar Container -->
         <aside class="main-sidebar elevation-4">
             <!-- Brand Logo -->
-            <a href="#" class="brand-link">
+            <a href="{{ route('dashboard.index') }}" class="brand-link">
                 <img src="{{ asset('dist/img/logo_KabMadiun.gif') }}" alt="Logo SIPETA" class="brand-image img-circle elevation-2">
                 <span class="brand-text">SIPETA</span>
             </a>
@@ -261,25 +284,25 @@
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         @if (auth()->user()->tipeuser->id == 1)
                         <li class="nav-item">
-                            <a href="#" class="nav-link">
+                            <a href="{{ route('dashboard.index') }}" class="nav-link {{ request()->routeIs('dashboard.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-tachometer-alt"></i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('user.index') }}" class="nav-link">
+                            <a href="{{ route('user.index') }}" class="nav-link {{ request()->routeIs('user.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-users"></i> 
                                 <p>Kelola Pengguna</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ route('tenant.index') }}" class="nav-link">
+                            <a href="{{ route('tenant.index') }}" class="nav-link {{ request()->routeIs('tenant.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-map-marked-alt"></i> 
                                 <p>Kelola Destinasi</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{route('tenant_report.index') }}" class="nav-link">
+                            <a href="{{ route('tenant_report.index') }}" class="nav-link {{ request()->routeIs('tenant_report.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-chart-bar"></i>  
                                 <p>Laporan Booking</p>
                             </a>
@@ -288,13 +311,13 @@
                         
                         @if (auth()->user()->tipeuser->id == 2)
                         <li class="nav-item">
-                            <a href="{{route('user_tenant_booking.index') }}" class="nav-link">
+                            <a href="{{ route('user_tenant_booking.index') }}" class="nav-link {{ request()->routeIs('user_tenant_booking.index') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-calendar-check"></i> 
                                 <p>Kelola Booking</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{route('user_tenant_booking.scan') }}" class="nav-link">
+                            <a href="{{ route('user_tenant_booking.scan') }}" class="nav-link {{ request()->routeIs('user_tenant_booking.scan') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-qrcode"></i>  
                                 <p>Scan QR Code</p>
                             </a>
@@ -302,13 +325,13 @@
                         @endif
                         
                         <li class="nav-item mt-3">
-                            <a href="{{route('user.edit', auth()->user()->id) }}" class="nav-link">
+                            <a href="{{ route('user.edit', auth()->user()->id) }}" class="nav-link {{ request()->routeIs('user.edit') && request()->route('user') == auth()->user()->id ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-user-cog"></i> 
                                 <p>Pengaturan Akun</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{route('logout')}}" class="nav-link">
+                            <a href="{{ route('logout') }}" class="nav-link">
                                 <i class="nav-icon fas fa-sign-out-alt"></i> 
                                 <p>Keluar</p>
                             </a>
@@ -332,7 +355,7 @@
         <footer class="main-footer">
             <div class="row">
                 <div class="col-md-6">
-                    <strong>Copyright &copy; 2025 <a href="#">SIPETA</a>.</strong> 
+                    <strong>Copyright &copy; 2025 <a href="{{ route('dashboard.index') }}">SIPETA</a>.</strong> 
                     Sistem Pariwisata Kabupaten Madiun.
                 </div>
                 <div class="col-md-6 text-right">
@@ -403,21 +426,14 @@
                 }
             });
 
-            // Active menu highlighting
-            const currentUrl = window.location.href;
-            $('.nav-sidebar .nav-link').each(function() {
-                if ($(this).attr('href') === currentUrl) {
-                    $(this).addClass('active');
-                }
-            });
-
-            // Smooth transitions for sidebar
+            // Professional hover effects (no spinning icons)
             $('.nav-sidebar .nav-link').hover(
                 function() {
-                    $(this).find('.nav-icon').addClass('fa-spin');
+                    // Subtle scale effect on icon instead of spinning
+                    $(this).find('.nav-icon').css('transform', 'scale(1.1)');
                 },
                 function() {
-                    $(this).find('.nav-icon').removeClass('fa-spin');
+                    $(this).find('.nav-icon').css('transform', 'scale(1)');
                 }
             );
         });
