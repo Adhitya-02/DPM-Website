@@ -34,7 +34,7 @@
                 </div>
             @endif
 
-            <button type="button" class="btn btn-primary mb-3" id="tambah" data-toggle="modal" data-target="#modal-default">
+            <button type="button" class="btn btn-primary mb-3" id="tambah" data-toggle="modal">
                 <i class="fas fa-plus"></i> Tambah Tenant
             </button>
             
@@ -55,35 +55,35 @@
                     @foreach ($data as $index => $d)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $d->nama ?? '-' }}</td>
-                            <td>{{ $d->alamat ?? '-' }}</td>
-                            <td>{{ $d->deskripsi ?? '-' }}</td>
+                            <td>{{ $d->nama }}</td>
+                            <td>{{ $d->alamat }}</td>
+                            <td>{{ Str::limit($d->deskripsi, 50) }}</td>
                             <td>
                                 @if ($d->tipe_tenant_id == 1)
-                                    <span class="badge badge-info">Destinasi wisata</span>
+                                    <span class="badge badge-primary">Destinasi wisata</span>
                                 @elseif($d->tipe_tenant_id == 2)
-                                    <span class="badge badge-warning">Rumah makan</span>
+                                    <span class="badge badge-info">Rumah makan</span>
                                 @elseif($d->tipe_tenant_id == 3)
-                                    <span class="badge badge-primary">Hotel</span>
+                                    <span class="badge badge-success">Hotel</span>
                                 @endif
                             </td>
-                            <td>{{ number_format($d->harga, 0, ',', '.') }}</td>
+                            <td>Rp {{ number_format($d->harga, 0, ',', '.') }}</td>
                             <td>
                                 @if ($d->is_status_aktif == 1)
                                     <span class="badge badge-success">Aktif</span>
-                                @elseif($d->is_status_aktif == 0)
+                                @else
                                     <span class="badge badge-secondary">Tidak aktif</span>
                                 @endif
                             </td>
                             <td>
                                 <!-- Tombol Detail -->
-                                <a href="{{ route('gambar_tenant.edit', $d->id) }}" class="btn btn-info btn-sm" title="Detail Gambar">
+                                <a href="{{ route('gambar_tenant.edit', $d->id) }}" class="btn btn-info btn-sm" title="Detail Tenant">
                                     <i class="fas fa-eye"></i>
                                 </a>
 
                                 <!-- Tombol Edit -->
                                 <button type="button" class="btn btn-warning btn-sm btn-edit" data-toggle="modal"
-                                    data-target="#modal-edit-{{ $d->id }}" lat="{{ $d->latitude }}"
+                                    _target="#modal-edit-{{ $d->id }}" lat="{{ $d->latitude }}"
                                     long="{{ $d->longitude }}" title="Edit Tenant">
                                     <i class="fas fa-edit"></i>
                                 </button>
@@ -105,56 +105,58 @@
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="modalEditLabel{{ $d->id }}">
-                                                <i class="fas fa-edit"></i> Edit Tenant: {{ $d->nama }}
-                                            </h5>
+                                            <h5 class="modal-title" id="modalEditLabel{{ $d->id }}">Edit Tenant: {{ $d->nama }}</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                         <div class="modal-body">
-                                            <div class="form-group">
-                                                <label for="nama{{ $d->id }}">Nama <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="nama{{ $d->id }}" name="nama"
-                                                    value="{{ $d->nama }}" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="alamat{{ $d->id }}">Alamat <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="alamat{{ $d->id }}" name="alamat"
-                                                    value="{{ $d->alamat }}" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="deskripsi{{ $d->id }}">Deskripsi</label>
-                                                <textarea class="form-control" id="deskripsi{{ $d->id }}" name="deskripsi" rows="3">{{ $d->deskripsi }}</textarea>
-                                            </div>
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label for="longitude{{ $d->id }}">Longitude</label>
-                                                        <input type="text" class="form-control long" name="longitude"
-                                                            value="{{ $d->longitude }}" readonly>
+                                                        <label for="nama{{ $d->id }}">Nama <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" id="nama{{ $d->id }}" name="nama"
+                                                            value="{{ $d->nama }}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="alamat{{ $d->id }}">Alamat <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" id="alamat{{ $d->id }}" name="alamat"
+                                                            value="{{ $d->alamat }}" required>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="deskripsi{{ $d->id }}">Deskripsi</label>
+                                                        <textarea class="form-control" id="deskripsi{{ $d->id }}" name="deskripsi" rows="3">{{ $d->deskripsi }}</textarea>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="form-group">
-                                                        <label for="latitude{{ $d->id }}">Latitude</label>
+                                                        <label for="longitude{{ $d->id }}">Longitude <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control long" name="longitude"
+                                                            value="{{ $d->longitude }}" readonly>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="latitude{{ $d->id }}">Latitude <span class="text-danger">*</span></label>
                                                         <input type="text" class="form-control lat" name="latitude"
                                                             value="{{ $d->latitude }}" readonly>
                                                     </div>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="harga{{ $d->id }}">Harga <span class="text-danger">*</span></label>
-                                                <input type="number" class="form-control" id="harga{{ $d->id }}" name="harga"
-                                                    value="{{ $d->harga }}" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <div style="width: 100%; height:400px;">
-                                                    <div class="map-container-edit" id="map-container-{{ $d->id }}"
-                                                        style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px;">
+                                                    <div class="form-group">
+                                                        <label for="harga{{ $d->id }}">Harga <span class="text-danger">*</span></label>
+                                                        <input type="number" class="form-control" name="harga"
+                                                            value="{{ $d->harga }}" required>
                                                     </div>
                                                 </div>
                                             </div>
+                                            
+                                            <div class="form-group">
+                                                <label>Lokasi pada Peta</label>
+                                                <div style="width: 100%; height:400px;">
+                                                    <div class="map-container-edit" id="map-container-{{ $d->id }}"
+                                                        style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
+                                                    </div>
+                                                </div>
+                                                <small class="form-text text-muted">Klik pada peta untuk mengubah lokasi</small>
+                                            </div>
+
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <div class="form-group">
@@ -207,7 +209,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">
-                        <i class="fas fa-plus"></i> Tambah Tenant Baru
+                        <i class="fas fa-building"></i> Tambah Tenant Baru
                     </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -216,46 +218,54 @@
                 <div class="modal-body">
                     <form action="{{ route('tenant.store') }}" method="POST" id="addTenantForm">
                         @csrf
-                        <div class="form-group">
-                            <label for="nama">Nama <span class="text-danger">*</span></label>
-                            <input name="nama" type="text" class="form-control" id="nama"
-                                placeholder="Masukkan nama tenant" required value="{{ old('nama') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="alamat">Alamat <span class="text-danger">*</span></label>
-                            <input name="alamat" type="text" class="form-control" id="alamat"
-                                placeholder="Masukkan alamat tenant" required value="{{ old('alamat') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="deskripsi">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" id="deskripsi" placeholder="Masukkan deskripsi tenant" rows="3">{{ old('deskripsi') }}</textarea>
-                        </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="latitude">Latitude</label>
-                                    <input name="latitude" type="text" class="form-control lat" id="latitude"
-                                        placeholder="Klik pada peta" readonly required>
+                                    <label for="nama">Nama <span class="text-danger">*</span></label>
+                                    <input name="nama" type="text" class="form-control" id="nama"
+                                        placeholder="Masukkan nama tenant" required value="{{ old('nama') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="alamat">Alamat <span class="text-danger">*</span></label>
+                                    <input name="alamat" type="text" class="form-control" id="alamat"
+                                        placeholder="Masukkan alamat lengkap" required value="{{ old('alamat') }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="deskripsi">Deskripsi</label>
+                                    <textarea name="deskripsi" class="form-control" id="deskripsi" placeholder="Masukkan deskripsi tenant" rows="3">{{ old('deskripsi') }}</textarea>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="longitude">Longitude</label>
+                                    <label for="latitude">Latitude <span class="text-danger">*</span></label>
+                                    <input name="latitude" type="text" class="form-control lat" id="latitude"
+                                        placeholder="Akan terisi otomatis dari peta" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="longitude">Longitude <span class="text-danger">*</span></label>
                                     <input name="longitude" type="text" class="form-control long" id="longitude"
-                                        placeholder="Klik pada peta" readonly required>
+                                        placeholder="Akan terisi otomatis dari peta" readonly required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="harga">Harga <span class="text-danger">*</span></label>
+                                    <input name="harga" type="number" class="form-control" id="harga"
+                                        placeholder="Masukkan harga" required value="{{ old('harga') }}">
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="form-group">
+                            <label>Lokasi pada Peta <span class="text-danger">*</span></label>
                             <div style="width: 100%; height:400px;">
                                 <div id="map-container-create"
-                                    style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px;">
+                                    style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 4px;">
                                 </div>
                             </div>
-                            <small class="form-text text-muted">Klik pada peta untuk menentukan lokasi tenant</small>
+                            <small class="form-text text-muted">Klik pada peta untuk menandai lokasi tenant</small>
                         </div>
+                        
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="tipe_tenant_id">Tipe Tenant <span class="text-danger">*</span></label>
                                     <select name="tipe_tenant_id" class="form-control" id="tipe_tenant_id" required>
@@ -266,18 +276,10 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="harga">Harga <span class="text-danger">*</span></label>
-                                    <input name="harga" type="number" class="form-control" id="harga"
-                                        placeholder="Masukkan harga" required value="{{ old('harga') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="is_status_aktif">Status <span class="text-danger">*</span></label>
                                     <select name="is_status_aktif" class="form-control" id="is_status_aktif" required>
-                                        <option value="">Pilih Status</option>
                                         <option value="1" {{ old('is_status_aktif') == '1' ? 'selected' : '' }}>Aktif</option>
                                         <option value="0" {{ old('is_status_aktif') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
                                     </select>
@@ -296,7 +298,9 @@
                     </form>
                 </div>
             </div>
+            <!-- /.modal-content -->
         </div>
+        <!-- /.modal-dialog -->
     </div>
 
     <!-- Form tersembunyi untuk aksi hapus tenant -->
@@ -320,14 +324,87 @@
             setTimeout(function() {
                 $('.alert').fadeOut('slow');
             }, 5000);
+        });
 
+        // Form validation untuk modal tambah tenant
+        document.getElementById('addTenantForm').addEventListener('submit', function(e) {
+            const nama = document.getElementById('nama').value.trim();
+            const alamat = document.getElementById('alamat').value.trim();
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
+            const harga = document.getElementById('harga').value.trim();
+            const tipeTenant = document.getElementById('tipe_tenant_id').value;
+
+            if (!nama || !alamat || !latitude || !longitude || !harga || !tipeTenant) {
+                e.preventDefault();
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
+                return false;
+            }
+
+            if (harga <= 0) {
+                e.preventDefault();
+                alert('Harga harus lebih besar dari 0');
+                return false;
+            }
+        });
+    </script>
+
+    <style>
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        
+        .btn-sm {
+            margin: 0 2px;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .modal-header .close {
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+        
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .form-text {
+            margin-top: 0.25rem;
+        }
+
+        .modal-lg {
+            max-width: 900px;
+        }
+
+        .map-container-edit, #map-container-create {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+@endsection
+
+@section('script')
+    <script>
+        $(document).ready(function() {
             const table = $("#table-tenant").DataTable({
-                "responsive": true,
+                "responsive": false,
                 "lengthChange": false,
                 "autoWidth": false,
                 "searching": true,
-                "ordering": true,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                "ordering": false,
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
                 }
@@ -336,7 +413,7 @@
             // Function to initialize edit button click events
             function initializeEditButtons() {
                 $('.btn-edit').off('click').on('click', function() {
-                    const targetModal = $(this).attr('data-target');
+                    const targetModal = $(this).attr('_target');
                     const lat = $(this).attr('lat');
                     const long = $(this).attr('long');
 
@@ -406,149 +483,80 @@
                 });
 
                 const geocoder = L.Control.geocoder({
-                    defaultMarkGeocode: false,
-                    placeholder: 'Cari lokasi atau desa...',
-                    position: 'topleft',
-                }).addTo(map);
+                        defaultMarkGeocode: false,
+                        placeholder: 'Cari lokasi atau desa...',
+                        position: 'topleft',
+                    }).addTo(map);
 
-                geocoder.on('markgeocode', function(e) {
-                    const latlng = e.geocode.center;
+                    geocoder.on('markgeocode', function(e) {
+                        const latlng = e.geocode.center;
 
-                    if (marker) {
-                        map.removeLayer(marker);
-                    }
-
-                    marker = L.marker(latlng).addTo(map);
-                    map.setView(latlng, 16);
-
-                    const activeModal = document.querySelector('.modal.show');
-                    if (activeModal) {
-                        const latInput = activeModal.querySelector('.lat');
-                        const longInput = activeModal.querySelector('.long');
-                        if (latInput && longInput) {
-                            latInput.value = latlng.lat.toFixed(6);
-                            longInput.value = latlng.lng.toFixed(6);
+                        if (marker) {
+                            map.removeLayer(marker);
                         }
-                    }
-                });
 
-                const locationButton = L.control({
-                    position: 'topleft'
-                });
-                locationButton.onAdd = function(map) {
-                    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                    div.innerHTML = `
+                        marker = L.marker(latlng).addTo(map);
+                        map.setView(latlng, 16);
+
+                        const activeModal = document.querySelector('.modal.show');
+                        if (activeModal) {
+                            const latInput = activeModal.querySelector('.lat');
+                            const longInput = activeModal.querySelector('.long');
+                            if (latInput && longInput) {
+                                latInput.value = latlng.lat.toFixed(6);
+                                longInput.value = latlng.lng.toFixed(6);
+                            }
+                        }
+                    });
+
+
+                    const locationButton = L.control({
+                        position: 'topleft'
+                    });
+                    locationButton.onAdd = function(map) {
+                        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                        div.innerHTML = `
 <a href="#" title="Get Current Location" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:white; text-decoration:none;">
 <i class="fas fa-location-arrow"></i>
 </a>
 `;
 
-                    div.onclick = function(e) {
-                        e.preventDefault();
-                        if ("geolocation" in navigator) {
-                            navigator.geolocation.getCurrentPosition(function(position) {
-                                const lat = position.coords.latitude;
-                                const lng = position.coords.longitude;
+                        div.onclick = function(e) {
+                            e.preventDefault();
+                            if ("geolocation" in navigator) {
+                                navigator.geolocation.getCurrentPosition(function(position) {
+                                    const lat = position.coords.latitude;
+                                    const lng = position.coords.longitude;
 
-                                // Update map view
-                                map.setView([lat, lng], 15);
+                                    // Update map view
+                                    map.setView([lat, lng], 15);
 
-                                // Update marker
-                                if (marker) {
-                                    map.removeLayer(marker);
-                                }
-                                marker = L.marker([lat, lng]).addTo(map);
-
-                                // Update form inputs
-                                const activeModal = document.querySelector('.modal.show');
-                                if (activeModal) {
-                                    const latInput = activeModal.querySelector('.lat');
-                                    const longInput = activeModal.querySelector('.long');
-                                    if (latInput && longInput) {
-                                        latInput.value = lat.toFixed(6);
-                                        longInput.value = lng.toFixed(6);
+                                    // Update marker
+                                    if (marker) {
+                                        map.removeLayer(marker);
                                     }
-                                }
-                            });
-                        } else {
-                            alert("Geolocation is not supported by your browser");
-                        }
+                                    marker = L.marker([lat, lng]).addTo(map);
+
+                                    // Update form inputs
+                                    const activeModal = document.querySelector('.modal.show');
+                                    if (activeModal) {
+                                        const latInput = activeModal.querySelector('.lat');
+                                        const longInput = activeModal.querySelector('.long');
+                                        if (latInput && longInput) {
+                                            latInput.value = lat.toFixed(6);
+                                            longInput.value = lng.toFixed(6);
+                                        }
+                                    }
+                                });
+                            } else {
+                                alert("Geolocation is not supported by your browser");
+                            }
+                        };
+                        return div;
                     };
-                    return div;
-                };
-                locationButton.addTo(map);
-            }
-        });
+                    locationButton.addTo(map);
 
-        // Form validation untuk modal tambah tenant
-        document.getElementById('addTenantForm').addEventListener('submit', function(e) {
-            const nama = document.getElementById('nama').value.trim();
-            const alamat = document.getElementById('alamat').value.trim();
-            const tipe_tenant = document.getElementById('tipe_tenant_id').value;
-            const harga = document.getElementById('harga').value.trim();
-            const status = document.getElementById('is_status_aktif').value;
-            const latitude = document.getElementById('latitude').value.trim();
-            const longitude = document.getElementById('longitude').value.trim();
-
-            if (!nama || !alamat || !tipe_tenant || !harga || !status || !latitude || !longitude) {
-                e.preventDefault();
-                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *) dan tentukan lokasi pada peta');
-                return false;
-            }
-
-            // Harga validation
-            if (isNaN(harga) || parseFloat(harga) < 0) {
-                e.preventDefault();
-                alert('Harga harus berupa angka yang valid');
-                return false;
             }
         });
     </script>
-
-    <style>
-        .table th {
-            background-color: #f8f9fa;
-            border-top: none;
-        }
-        
-        .btn-sm {
-            margin: 0 2px;
-        }
-        
-        .badge {
-            font-size: 0.8em;
-        }
-        
-        .modal-header {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .modal-header .close {
-            color: white;
-            opacity: 0.8;
-        }
-        
-        .modal-header .close:hover {
-            opacity: 1;
-        }
-        
-        .text-danger {
-            color: #dc3545 !important;
-        }
-        
-        .form-text {
-            margin-top: 0.25rem;
-        }
-
-        .modal-lg {
-            max-width: 800px;
-        }
-
-        #map-container-create, .map-container-edit {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-    </style>
-
 @endsection
