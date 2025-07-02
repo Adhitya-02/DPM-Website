@@ -280,7 +280,7 @@
             font-weight: 500;
             text-decoration: none;
             display: inline-flex;
-            align-items: right;
+            align-items: center;
             gap: 6px;
             transition: all 0.3s ease;
         }
@@ -299,6 +299,18 @@
             padding: 25px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             border: 1px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .review-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
         }
 
         .review-header {
@@ -311,7 +323,7 @@
         }
 
         .review-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
             color: white;
             width: 40px;
             height: 40px;
@@ -380,8 +392,8 @@
 
         .review-textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #ffc107;
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
         }
 
         .review-buttons {
@@ -412,13 +424,125 @@
         }
 
         .btn-submit {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
             color: white;
         }
 
         .btn-submit:hover {
             transform: translateY(-1px);
-            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 3px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        /* Existing Review Display */
+        .existing-review {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #ffc107;
+        }
+
+        .existing-review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .existing-rating {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        .existing-rating .star {
+            color: #ffc107;
+            font-size: 18px;
+        }
+
+        .existing-rating .star.empty {
+            color: #dee2e6;
+        }
+
+        .existing-review-text {
+            color: #2c3e50;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-edit {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #138496;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        /* Not Available Section */
+        .not-available-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+        }
+
+        .not-available-icon {
+            background: #6c757d;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 15px;
+        }
+
+        .not-available-title {
+            color: #6c757d;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .not-available-text {
+            color: #6c757d;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
         /* Alert Messages */
@@ -519,6 +643,10 @@
             .qr-code img {
                 max-width: 150px;
             }
+
+            .review-actions {
+                justify-content: center;
+            }
         }
 
         @media (max-width: 480px) {
@@ -549,6 +677,16 @@
             .qr-section, .payment-section {
                 padding: 20px;
             }
+
+            .not-available-section {
+                padding: 20px;
+            }
+
+            .not-available-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
 
         /* Animation */
@@ -563,7 +701,7 @@
             }
         }
 
-        .ticket-section, .review-section {
+        .ticket-section, .review-section, .not-available-section {
             animation: fadeInUp 0.6s ease-out;
         }
     </style>
@@ -623,26 +761,26 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Tanggal Kunjungan</div>
-                    <div class="info-value">{{ formatDateIndonesia($data->tanggal, 'd M Y, H:i') }}</div>
+                    <div class="info-value">{{ \Carbon\Carbon::parse($data->tanggal)->format('d M Y, H:i') }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Jumlah Tiket</div>
                     <div class="info-value">{{ $data->jumlah }} Tiket</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Kode Booking</div>
-                    <div class="info-value">{{ $data->kode_booking }}</div>
+                    <div class="info-label">Total Harga</div>
+                    <div class="info-value">Rp {{ number_format($data->jumlah * $tenant->harga, 0, ',', '.') }}</div>
                 </div>
             </div>
 
             <div class="status-badges">
-                <span class="status-badge {{ getStatusBadgeClass($data->status, 'kehadiran') }}">
-                    <i class="{{ getStatusIcon($data->status, 'kehadiran') }}"></i>
-                    {{ getStatusText($data->status, 'kehadiran') }}
+                <span class="status-badge status-kehadiran {{ $data->status == 2 ? 'hadir' : '' }}">
+                    <i class="fas {{ $data->status == 2 ? 'fa-check-circle' : 'fa-clock' }}"></i>
+                    {{ $data->status == 2 ? 'Sudah Hadir' : ($data->status == 1 ? 'Belum Hadir' : 'Pending') }}
                 </span>
-                <span class="status-badge {{ getStatusBadgeClass($data->status_pembayaran, 'pembayaran') }}">
-                    <i class="{{ getStatusIcon($data->status_pembayaran, 'pembayaran') }}"></i>
-                    {{ getStatusText($data->status_pembayaran, 'pembayaran') }}
+                <span class="status-badge status-pembayaran {{ $data->status_pembayaran == 1 ? 'lunas' : '' }}">
+                    <i class="fas {{ $data->status_pembayaran == 1 ? 'fa-check-circle' : 'fa-clock' }}"></i>
+                    {{ $data->status_pembayaran == 1 ? 'Sudah Lunas' : 'Belum Bayar' }}
                 </span>
             </div>
 
@@ -685,52 +823,147 @@
             </div>
         </div>
 
-        <!-- Review Section -->
-        @if($data->status_pembayaran == 1)
-        <div class="review-section">
-            <div class="review-header">
-                <div class="review-icon">
-                    <i class="fas fa-star"></i>
+        <!-- Review Section - ONLY show if payment completed AND already attended (status = 2) -->
+        @if($data->status_pembayaran == 1 && $data->status == 2)
+            <div class="review-section">
+                <div class="review-header">
+                    <div class="review-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="review-title">
+                        <h3>Rating dan Ulasan</h3>
+                        <p>Bagikan pengalaman Anda tentang {{ $tenant->nama }}</p>
+                    </div>
                 </div>
-                <div class="review-title">
-                    <h3>Berikan Rating dan Ulasan</h3>
-                    <p>Bagikan pengalaman Anda tentang {{ $tenant->nama }}</p>
-                </div>
+
+                @php
+                    // Check if user already has rating and review for this tenant
+                    $existingRating = isset($rating) ? $rating : null;
+                    $existingUlasan = isset($ulasan) ? $ulasan : null;
+                @endphp
+
+                @if($existingRating || $existingUlasan)
+                    <!-- Show existing review -->
+                    <div class="existing-review">
+                        <div class="existing-review-header">
+                            <h4 style="margin: 0; color: #2c3e50; font-size: 16px;">Ulasan Anda</h4>
+                        </div>
+                        
+                        @if($existingRating)
+                            <div class="existing-rating">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <span class="star {{ $i <= $existingRating->rating ? '' : 'empty' }}">★</span>
+                                @endfor
+                                <span style="margin-left: 8px; color: #6c757d; font-size: 14px;">
+                                    ({{ $existingRating->rating }}/5)
+                                </span>
+                            </div>
+                        @endif
+
+                        @if($existingUlasan)
+                            <div class="existing-review-text">
+                                "{{ $existingUlasan->komentar }}"
+                            </div>
+                        @endif
+
+                        <div class="review-actions">
+                            @if($existingUlasan)
+                                <button type="button" class="btn-edit" onclick="editReview()">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <form method="POST" action="{{ route('ulasan.delete', $existingUlasan->id) }}" style="display: inline;" 
+                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus ulasan ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-delete">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Edit form (hidden by default) -->
+                    <form method="POST" action="{{ route('ulasan') }}" class="rating-form" id="editReviewForm" style="display: none;">
+                        @csrf
+                        <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
+                        
+                        <div class="rating-stars">
+                            @for($i = 5; $i >= 1; $i--)
+                                <input type="radio" name="rating" id="edit-star-{{ $i }}" value="{{ $i }}" 
+                                       {{ $existingRating && $existingRating->rating == $i ? 'checked' : '' }} required>
+                                <label for="edit-star-{{ $i }}">★</label>
+                            @endfor
+                        </div>
+
+                        <textarea 
+                            name="komentar" 
+                            class="review-textarea" 
+                            placeholder="Bagikan pengalaman Anda tentang tempat ini..." 
+                            required>{{ $existingUlasan ? $existingUlasan->komentar : '' }}</textarea>
+
+                        <div class="review-buttons">
+                            <button type="button" class="btn-cancel" onclick="cancelEdit()">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-save"></i> Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    <!-- Show new review form -->
+                    <form method="POST" action="{{ route('ulasan') }}" class="rating-form">
+                        @csrf
+                        <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
+                        
+                        <div class="rating-stars">
+                            @for($i = 5; $i >= 1; $i--)
+                                <input type="radio" name="rating" id="star-{{ $i }}" value="{{ $i }}" required>
+                                <label for="star-{{ $i }}">★</label>
+                            @endfor
+                        </div>
+
+                        <textarea 
+                            name="komentar" 
+                            class="review-textarea" 
+                            placeholder="Bagikan pengalaman Anda tentang tempat ini..." 
+                            required></textarea>
+
+                        <div class="review-buttons">
+                            <button type="reset" class="btn-cancel">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-paper-plane"></i> Kirim Ulasan
+                            </button>
+                        </div>
+                    </form>
+                @endif
             </div>
-
-            <form method="POST" action="{{ route('ulasan') }}" class="rating-form">
-                @csrf
-                <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
-                
-                <div class="rating-stars">
-                    <input type="radio" name="rating" id="star-5" value="5" required>
-                    <label for="star-5">★</label>
-                    <input type="radio" name="rating" id="star-4" value="4">
-                    <label for="star-4">★</label>
-                    <input type="radio" name="rating" id="star-3" value="3">
-                    <label for="star-3">★</label>
-                    <input type="radio" name="rating" id="star-2" value="2">
-                    <label for="star-2">★</label>
-                    <input type="radio" name="rating" id="star-1" value="1">
-                    <label for="star-1">★</label>
+        @elseif($data->status_pembayaran == 1 && $data->status != 2)
+            <!-- Show message when paid but not attended yet -->
+            <div class="not-available-section">
+                <div class="not-available-icon">
+                    <i class="fas fa-clock"></i>
                 </div>
-
-                <textarea 
-                    name="komentar" 
-                    class="review-textarea" 
-                    placeholder="Bagikan pengalaman Anda tentang tempat ini..." 
-                    required></textarea>
-
-                <div class="review-buttons">
-                    <button type="reset" class="btn-cancel">
-                        <i class="fas fa-times"></i> Batal
-                    </button>
-                    <button type="submit" class="btn-submit">
-                        <i class="fas fa-paper-plane"></i> Kirim Ulasan
-                    </button>
+                <h4 class="not-available-title">Rating & Ulasan Belum Tersedia</h4>
+                <p class="not-available-text">
+                    Silakan scan QR Code tiket Anda di lokasi destinasi wisata terlebih dahulu. 
+                    Setelah kehadiran Anda terkonfirmasi, Anda dapat memberikan rating dan ulasan.
+                </p>
+            </div>
+        @elseif($data->status_pembayaran == 0)
+            <!-- Show message when not paid yet -->
+            <div class="not-available-section">
+                <div class="not-available-icon">
+                    <i class="fas fa-credit-card"></i>
                 </div>
-            </form>
-        </div>
+                <h4 class="not-available-title">Pembayaran Diperlukan</h4>
+                <p class="not-available-text">
+                    Lakukan pembayaran terlebih dahulu, kemudian hadiri destinasi wisata untuk dapat memberikan rating dan ulasan.
+                </p>
+            </div>
         @endif
     </div>
 
@@ -761,7 +994,6 @@
                         window.snap.pay('{{ $data->snap_token }}', {
                             onSuccess: function(result) {
                                 console.log('Payment success:', result);
-                                // Reload page to show updated payment status
                                 window.location.reload();
                             },
                             onPending: function(result) {
@@ -791,10 +1023,183 @@
                     alert.style.transition = 'opacity 0.5s ease';
                     alert.style.opacity = '0';
                     setTimeout(function() {
-                        alert.remove();
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
                     }, 500);
                 });
             }, 5000);
+        });
+
+        // Review edit functions
+        function editReview() {
+            var existingReview = document.querySelector('.existing-review');
+            var editForm = document.getElementById('editReviewForm');
+            if (existingReview && editForm) {
+                existingReview.style.display = 'none';
+                editForm.style.display = 'block';
+            }
+        }
+
+        function cancelEdit() {
+            var existingReview = document.querySelector('.existing-review');
+            var editForm = document.getElementById('editReviewForm');
+            if (existingReview && editForm) {
+                existingReview.style.display = 'block';
+                editForm.style.display = 'none';
+            }
+        }
+
+        // Star rating interaction for better UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const ratingContainers = document.querySelectorAll('.rating-stars');
+            
+            ratingContainers.forEach(container => {
+                const stars = container.querySelectorAll('label');
+                const inputs = container.querySelectorAll('input[type="radio"]');
+                
+                stars.forEach((star, index) => {
+                    star.addEventListener('mouseenter', function() {
+                        // Highlight stars on hover
+                        for (let i = stars.length - 1; i >= index; i--) {
+                            stars[i].style.color = '#ffc107';
+                        }
+                        for (let i = index - 1; i >= 0; i--) {
+                            stars[i].style.color = '#ddd';
+                        }
+                    });
+                    
+                    star.addEventListener('click', function() {
+                        // Update visual feedback when clicked
+                        inputs[index].checked = true;
+                        updateStarDisplay(container, parseInt(inputs[index].value));
+                    });
+                });
+                
+                container.addEventListener('mouseleave', function() {
+                    // Reset to current selection
+                    const checkedInput = container.querySelector('input[type="radio"]:checked');
+                    if (checkedInput) {
+                        updateStarDisplay(container, parseInt(checkedInput.value));
+                    } else {
+                        // Reset all to default
+                        stars.forEach(star => {
+                            star.style.color = '#ddd';
+                        });
+                    }
+                });
+            });
+        });
+
+        function updateStarDisplay(container, rating) {
+            const stars = container.querySelectorAll('label');
+            stars.forEach((star, index) => {
+                const starValue = 5 - index; // Stars are in reverse order
+                if (starValue <= rating) {
+                    star.style.color = '#ffc107';
+                } else {
+                    star.style.color = '#ddd';
+                }
+            });
+        }
+
+        // Form validation enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.rating-form');
+            
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const ratingInput = form.querySelector('input[name="rating"]:checked');
+                    const textareaInput = form.querySelector('textarea[name="komentar"]');
+                    
+                    if (!ratingInput) {
+                        e.preventDefault();
+                        alert('Silakan pilih rating terlebih dahulu!');
+                        return false;
+                    }
+                    
+                    if (!textareaInput.value.trim()) {
+                        e.preventDefault();
+                        alert('Silakan tulis ulasan Anda!');
+                        textareaInput.focus();
+                        return false;
+                    }
+                    
+                    if (textareaInput.value.trim().length < 10) {
+                        e.preventDefault();
+                        alert('Ulasan minimal 10 karakter!');
+                        textareaInput.focus();
+                        return false;
+                    }
+                    
+                    // Show loading state
+                    const submitBtn = form.querySelector('.btn-submit');
+                    if (submitBtn) {
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+                        submitBtn.disabled = true;
+                        
+                        // Reset button after 10 seconds (failsafe)
+                        setTimeout(function() {
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }, 10000);
+                    }
+                });
+            });
+        });
+
+        // Character counter for textarea
+        document.addEventListener('DOMContentLoaded', function() {
+            const textareas = document.querySelectorAll('.review-textarea');
+            
+            textareas.forEach(textarea => {
+                // Add character counter
+                const counter = document.createElement('div');
+                counter.style.cssText = 'text-align: right; margin-top: 5px; font-size: 12px; color: #6c757d;';
+                counter.innerHTML = '0 karakter';
+                textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+                
+                textarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    counter.innerHTML = length + ' karakter';
+                    
+                    if (length < 10) {
+                        counter.style.color = '#dc3545';
+                    } else if (length > 500) {
+                        counter.style.color = '#ffc107';
+                    } else {
+                        counter.style.color = '#28a745';
+                    }
+                });
+            });
+        });
+
+        // Enhanced accessibility
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add keyboard navigation for star ratings
+            const radioInputs = document.querySelectorAll('.rating-stars input[type="radio"]');
+            
+            radioInputs.forEach((input, index) => {
+                input.addEventListener('keydown', function(e) {
+                    const currentGroup = this.closest('.rating-stars');
+                    const groupInputs = currentGroup.querySelectorAll('input[type="radio"]');
+                    
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const nextIndex = (index - 1 + groupInputs.length) % groupInputs.length;
+                        groupInputs[nextIndex].focus();
+                        groupInputs[nextIndex].checked = true;
+                        updateStarDisplay(currentGroup, parseInt(groupInputs[nextIndex].value));
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const prevIndex = (index + 1) % groupInputs.length;
+                        groupInputs[prevIndex].focus();
+                        groupInputs[prevIndex].checked = true;
+                        updateStarDisplay(currentGroup, parseInt(groupInputs[prevIndex].value));
+                    }
+                });
+            });
         });
     </script>
 </body>

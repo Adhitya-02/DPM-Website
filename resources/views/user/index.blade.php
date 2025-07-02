@@ -13,129 +13,154 @@
                     {{ session('success') }}
                 </div>
             @endif
+            
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#modal-default">
-                Tambah
+                <i class="fas fa-plus"></i> Tambah Pengguna
             </button>
+            
             <table id="example1" class="table table-bordered table-striped">
                 <thead>
                     <tr>
+                        <th style="width: 5%">No</th>
                         <th>Nama</th>
                         <th>Email</th>
-                        <th>Nomor Hp</th>
+                        <th>Nomor HP</th>
                         <th>Tipe User</th>
                         <th>Tenant</th>
-                        <th>Aksi</th>
+                        <th style="width: 15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($users as $user)
+                    @foreach ($users as $index => $user)
                         <tr>
-                            <td>{{ $user->nama }}</td>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $user->nama ?? '-' }}</td>
                             <td>{{ $user->email }}</td>
-                            <td>{{ $user->no_hp }}</td>
+                            <td>{{ $user->no_hp ?? '-' }}</td>
                             <td>
                                 @if ($user->tipe_user_id == 1)
-                                    Dinas
+                                    <span class="badge badge-primary">Dinas</span>
                                 @elseif($user->tipe_user_id == 2)
-                                    Tenant
+                                    <span class="badge badge-info">Tenant</span>
                                 @else
-                                    Pengunjung
+                                    <span class="badge badge-secondary">Pengunjung</span>
                                 @endif
                             </td>
                             <td>
-                                @if ($user->tipe_user_id == 2)
-                                    {{ $user->tenant->nama ?? '' }}
+                                @if ($user->tipe_user_id == 2 && isset($user->tenant))
+                                    {{ $user->tenant->nama }}
+                                @else
+                                    <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
                                 <!-- Tombol Edit -->
                                 <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
-                                    data-target="#modal-edit-{{ $user->id }}">
+                                    data-target="#modal-edit-{{ $user->id }}" title="Edit User">
                                     <i class="fas fa-edit"></i>
                                 </button>
 
-                                <!-- Tombol Hapus -->
-                                <form action="{{ route('user.destroy', $user->id) }}" method="POST"
-                                    style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-
                                 <!-- Tombol Reset Password -->
-                                <form action="{{ route('user.update', $user->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="password" value="12345678">
-                                    <button type="submit" class="btn btn-success btn-sm">
-                                        <i class="fas fa-key"></i>
-                                    </button>
-                                </form>
-                            </td>
+                                <button type="button" class="btn btn-success btn-sm" 
+                                    onclick="resetPassword({{ $user->id }}, '{{ $user->nama }}')" title="Reset Password">
+                                    <i class="fas fa-key"></i>
+                                </button>
 
+                                <!-- Tombol Hapus -->
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                    onclick="deleteUser({{ $user->id }}, '{{ $user->nama }}')" title="Hapus User">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                         </tr>
 
+                        <!-- Modal Edit User -->
                         <div class="modal fade" id="modal-edit-{{ $user->id }}" tabindex="-1" role="dialog"
-                            aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            aria-labelledby="modalEditLabel{{ $user->id }}" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <form action="{{ route('user.update', $user->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Edit Pengguna</h5>
+                                            <h5 class="modal-title" id="modalEditLabel{{ $user->id }}">Edit Pengguna: {{ $user->nama }}</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label for="nama">Nama</label>
-                                                <input type="text" class="form-control" id="nama" name="nama"
-                                                    value="{{ $user->nama }}">
+                                                <label for="nama{{ $user->id }}">Nama <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="nama{{ $user->id }}" name="nama"
+                                                    value="{{ $user->nama }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="email">Email</label>
-                                                <input type="email" class="form-control" id="email" name="email"
-                                                    value="{{ $user->email }}">
+                                                <label for="email{{ $user->id }}">Email <span class="text-danger">*</span></label>
+                                                <input type="email" class="form-control" id="email{{ $user->id }}" name="email"
+                                                    value="{{ $user->email }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="no_hp">Nomor HP</label>
-                                                <input type="text" class="form-control" id="no_hp" name="no_hp"
-                                                    value="{{ $user->no_hp }}">
+                                                <label for="no_hp{{ $user->id }}">Nomor HP</label>
+                                                <input type="text" class="form-control" id="no_hp{{ $user->id }}" name="no_hp"
+                                                    value="{{ $user->no_hp }}" placeholder="Contoh: 08123456789">
                                             </div>
                                             <div class="form-group">
-                                                <label for="tipe_user_id">Tipe User</label>
-                                                <select class="form-control" id="tipe_user_id" name="tipe_user_id">
-                                                    <option value="1"
-                                                        {{ $user->tipe_user_id == 1 ? 'selected' : '' }}>
+                                                <label for="tipe_user_id{{ $user->id }}">Tipe User <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="tipe_user_id{{ $user->id }}" name="tipe_user_id" required>
+                                                    <option value="1" {{ $user->tipe_user_id == 1 ? 'selected' : '' }}>
                                                         Dinas</option>
-                                                    <option value="2"
-                                                        {{ $user->tipe_user_id == 2 ? 'selected' : '' }}>
+                                                    <option value="2" {{ $user->tipe_user_id == 2 ? 'selected' : '' }}>
                                                         Tenant</option>
-                                                    </option>
+                                                    <option value="3" {{ $user->tipe_user_id == 3 ? 'selected' : '' }}>
+                                                        Pengunjung</option>
                                                 </select>
                                             </div>
                                             <div class="form-group">
-                                                <label for="tenant">Tenant</label>
-                                                <select class="form-control" id="tenant" name="tenant">
-                                                    <option value="">Pilih Tenant</option>
+                                                <label for="tenant{{ $user->id }}">Tenant</label>
+                                                <select class="form-control" id="tenant{{ $user->id }}" name="tenant">
+                                                    <option value="">Pilih Tenant (Opsional)</option>
                                                     @foreach ($tenant as $t)
-                                                        @if ($user->tipe_user_id == 2 || $user->tipe_tenant_id == 1)
-                                                            <option value="{{ $t->id }}"
-                                                                {{ $user->tenant->id == $t->id ? 'selected' : '' }}>
-                                                                {{ $t->nama }}</option>
-                                                        @endif
+                                                        @php
+                                                            $selected = '';
+                                                            if (isset($user->tenant) && $user->tenant->id == $t->id) {
+                                                                $selected = 'selected';
+                                                            }
+                                                        @endphp
+                                                        <option value="{{ $t->id }}" {{ $selected }}>
+                                                            {{ $t->nama }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
+                                                <small class="form-text text-muted">Hanya diperlukan untuk user dengan tipe "Tenant"</small>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Tutup</button>
-                                            <button type="submit" class="btn btn-primary">Simpan</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                <i class="fas fa-times"></i> Tutup
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Simpan Perubahan
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -148,58 +173,182 @@
         <!-- /.card-body -->
     </div>
 
+    <!-- Modal Tambah User -->
     <div class="modal fade" id="modal-default">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Tambah Pengguna</h4>
+                    <h4 class="modal-title">
+                        <i class="fas fa-user-plus"></i> Tambah Pengguna Baru
+                    </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('user.store') }}" method="POST">
+                    <form action="{{ route('user.store') }}" method="POST" id="addUserForm">
                         @csrf
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Nama</label>
-                            <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Nama"
-                                name="nama">
+                            <label for="nama">Nama <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nama" name="nama" 
+                                placeholder="Masukkan nama lengkap" required value="{{ old('nama') }}">
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Email</label>
-                            <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email"
-                                name="email">
+                            <label for="email">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                placeholder="contoh@email.com" required value="{{ old('email') }}">
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Nomor HP</label>
-                            <input type="text" class="form-control" id="exampleInputEmail1" placeholder="Nomor HP"
-                                name="no_hp">
+                            <label for="no_hp">Nomor HP</label>
+                            <input type="text" class="form-control" id="no_hp" name="no_hp" 
+                                placeholder="08123456789" value="{{ old('no_hp') }}">
                         </div>
                         <div class="form-group">
-                            <label>Tipe User</label>
-                            <select class="form-control" name="tipe_user_id">
-                                <option value="1">
-                                    Dinas</option>
-                                <option value="2">
-                                    Tenant</option>
-                                </option>
+                            <label for="tipe_user_id">Tipe User <span class="text-danger">*</span></label>
+                            <select class="form-control" id="tipe_user_id" name="tipe_user_id" required>
+                                <option value="">Pilih Tipe User</option>
+                                <option value="1" {{ old('tipe_user_id') == '1' ? 'selected' : '' }}>Dinas</option>
+                                <option value="2" {{ old('tipe_user_id') == '2' ? 'selected' : '' }}>Tenant</option>
+                                <option value="3" {{ old('tipe_user_id') == '3' ? 'selected' : '' }}>Pengunjung</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Tenant</label>
-                            <select class="form-control" name="tenant_id">
-                                <option value="">Pilih Tenant</option>
+                            <label for="tenant_id">Tenant</label>
+                            <select class="form-control" id="tenant_id" name="tenant_id">
+                                <option value="">Pilih Tenant (Opsional)</option>
                                 @foreach ($tenant as $t)
-                                    <option value="{{ $t->id }}">{{ $t->nama }}</option>
+                                    <option value="{{ $t->id }}" {{ old('tenant_id') == $t->id ? 'selected' : '' }}>
+                                        {{ $t->nama }}
+                                    </option>
                                 @endforeach
                             </select>
+                            <small class="form-text text-muted">
+                                Hanya diperlukan untuk user dengan tipe "Tenant". Password default: <strong>12345678</strong>
+                            </small>
                         </div>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
+                        
+                        <div class="modal-footer px-0">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
-            <!-- /.modal-content -->
         </div>
-        <!-- /.modal-dialog -->
     </div>
+
+    <!-- Form tersembunyi untuk aksi reset password -->
+    <form id="resetPasswordForm" method="POST" style="display: none;">
+        @csrf
+        @method('POST')
+    </form>
+
+    <!-- Form tersembunyi untuk aksi hapus user -->
+    <form id="deleteUserForm" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <script>
+        // Fungsi untuk reset password
+        function resetPassword(userId, userName) {
+            if (confirm('Apakah Anda yakin ingin mereset password untuk user "' + userName + '" ke default (12345678)?')) {
+                const form = document.getElementById('resetPasswordForm');
+                form.action = "{{ url('user/reset-password') }}/" + userId;
+                form.submit();
+            }
+        }
+
+        // Fungsi untuk hapus user
+        function deleteUser(userId, userName) {
+            if (confirm('Apakah Anda yakin ingin menghapus user "' + userName + '"?\n\nAksi ini tidak dapat dibatalkan dan akan menghapus semua data terkait user tersebut.')) {
+                const form = document.getElementById('deleteUserForm');
+                form.action = "{{ route('user.destroy', '') }}/" + userId;
+                form.submit();
+            }
+        }
+
+        // Auto close alerts after 5 seconds
+        $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // DataTable initialization if you're using it
+            if (typeof $('#example1').DataTable === 'function') {
+                $('#example1').DataTable({
+                    "responsive": true,
+                    "lengthChange": false,
+                    "autoWidth": false,
+                    "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
+                    }
+                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
+            }
+        });
+
+        // Form validation untuk modal tambah user
+        document.getElementById('addUserForm').addEventListener('submit', function(e) {
+            const nama = document.getElementById('nama').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const tipeUser = document.getElementById('tipe_user_id').value;
+
+            if (!nama || !email || !tipeUser) {
+                e.preventDefault();
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
+                return false;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                e.preventDefault();
+                alert('Format email tidak valid');
+                return false;
+            }
+        });
+    </script>
+
+    <style>
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        
+        .btn-sm {
+            margin: 0 2px;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .modal-header .close {
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+        
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .form-text {
+            margin-top: 0.25rem;
+        }
+    </style>
+
 @endsection
