@@ -2,7 +2,7 @@
 @section('content')
     <div class="card">
         <div class="card-header">
-            <h3 class="card-title">Pengelola Tenant</h3>
+            <h3 class="card-title">Pengelola Pengguna</h3>
         </div>
         <!-- /.card-header -->
         <div class="card-body">
@@ -34,152 +34,124 @@
                 </div>
             @endif
 
-            <button type="button" class="btn btn-primary mb-3" id="tambah" data-toggle="modal" data-target="#modal-default">
-                <i class="fas fa-plus"></i> Tambah Tenant
+            <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#modal-default">
+                <i class="fas fa-plus"></i> Tambah Pengguna
             </button>
             
-            <table id="table-tenant" class="table table-bordered table-striped">
+            <table id="example1" class="table table-bordered table-striped">
                 <thead>
                     <tr>
                         <th style="width: 5%">No</th>
                         <th>Nama</th>
-                        <th>Alamat</th>
-                        <th>Deskripsi</th>
-                        <th>Tipe Tenant</th>
-                        <th>Harga</th>
-                        <th>Status</th>
+                        <th>Email</th>
+                        <th>Nomor HP</th>
+                        <th>Tipe User</th>
+                        <th>Tenant</th>
                         <th style="width: 15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($data as $index => $d)
+                    @foreach ($users as $index => $user)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $d->nama ?? '-' }}</td>
-                            <td>{{ $d->alamat ?? '-' }}</td>
-                            <td>{{ $d->deskripsi ?? '-' }}</td>
+                            <td>{{ $user->nama ?? '-' }}</td>
+                            <td>{{ $user->email }}</td>
+                            <td>{{ $user->no_hp ?? '-' }}</td>
                             <td>
-                                @if ($d->tipe_tenant_id == 1)
-                                    <span class="badge badge-info">Destinasi wisata</span>
-                                @elseif($d->tipe_tenant_id == 2)
-                                    <span class="badge badge-warning">Rumah makan</span>
-                                @elseif($d->tipe_tenant_id == 3)
-                                    <span class="badge badge-primary">Hotel</span>
-                                @endif
-                            </td>
-                            <td>{{ number_format($d->harga, 0, ',', '.') }}</td>
-                            <td>
-                                @if ($d->is_status_aktif == 1)
-                                    <span class="badge badge-success">Aktif</span>
-                                @elseif($d->is_status_aktif == 0)
-                                    <span class="badge badge-secondary">Tidak aktif</span>
+                                @if ($user->tipe_user_id == 1)
+                                    <span class="badge badge-primary">Dinas</span>
+                                @elseif($user->tipe_user_id == 2)
+                                    <span class="badge badge-info">Tenant</span>
+                                @else
+                                    <span class="badge badge-secondary">Pengunjung</span>
                                 @endif
                             </td>
                             <td>
-                                <!-- Tombol Detail -->
-                                <a href="{{ route('gambar_tenant.edit', $d->id) }}" class="btn btn-info btn-sm" title="Detail Gambar">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-
+                                @if ($user->tipe_user_id == 2 && isset($user->tenant))
+                                    {{ $user->tenant->nama }}
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
                                 <!-- Tombol Edit -->
-                                <button type="button" class="btn btn-warning btn-sm btn-edit" data-toggle="modal"
-                                    data-target="#modal-edit-{{ $d->id }}" lat="{{ $d->latitude }}"
-                                    long="{{ $d->longitude }}" title="Edit Tenant">
+                                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
+                                    data-target="#modal-edit-{{ $user->id }}" title="Edit User">
                                     <i class="fas fa-edit"></i>
+                                </button>
+
+                                <!-- Tombol Reset Password -->
+                                <button type="button" class="btn btn-success btn-sm" 
+                                    onclick="resetPassword({{ $user->id }}, '{{ $user->nama }}')" title="Reset Password">
+                                    <i class="fas fa-key"></i>
                                 </button>
 
                                 <!-- Tombol Hapus -->
                                 <button type="button" class="btn btn-danger btn-sm" 
-                                    onclick="deleteTenant({{ $d->id }}, '{{ $d->nama }}')" title="Hapus Tenant">
+                                    onclick="deleteUser({{ $user->id }}, '{{ $user->nama }}')" title="Hapus User">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
                         </tr>
 
-                        <!-- Modal Edit Tenant -->
-                        <div class="modal fade" id="modal-edit-{{ $d->id }}" tabindex="-1" role="dialog"
-                            aria-labelledby="modalEditLabel{{ $d->id }}" aria-hidden="true">
-                            <div class="modal-dialog modal-lg" role="document">
+                        <!-- Modal Edit User -->
+                        <div class="modal fade" id="modal-edit-{{ $user->id }}" tabindex="-1" role="dialog"
+                            aria-labelledby="modalEditLabel{{ $user->id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
                                 <div class="modal-content">
-                                    <form action="{{ route('tenant.update', $d->id) }}" method="POST">
+                                    <form action="{{ route('user.update', $user->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="modalEditLabel{{ $d->id }}">
-                                                <i class="fas fa-edit"></i> Edit Tenant: {{ $d->nama }}
-                                            </h5>
+                                            <h5 class="modal-title" id="modalEditLabel{{ $user->id }}">Edit Pengguna: {{ $user->nama }}</h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label for="nama{{ $d->id }}">Nama <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="nama{{ $d->id }}" name="nama"
-                                                    value="{{ $d->nama }}" required>
+                                                <label for="nama{{ $user->id }}">Nama <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="nama{{ $user->id }}" name="nama"
+                                                    value="{{ $user->nama }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="alamat{{ $d->id }}">Alamat <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="alamat{{ $d->id }}" name="alamat"
-                                                    value="{{ $d->alamat }}" required>
+                                                <label for="email{{ $user->id }}">Email <span class="text-danger">*</span></label>
+                                                <input type="email" class="form-control" id="email{{ $user->id }}" name="email"
+                                                    value="{{ $user->email }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="deskripsi{{ $d->id }}">Deskripsi</label>
-                                                <textarea class="form-control" id="deskripsi{{ $d->id }}" name="deskripsi" rows="3">{{ $d->deskripsi }}</textarea>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="longitude{{ $d->id }}">Longitude</label>
-                                                        <input type="text" class="form-control long" name="longitude"
-                                                            value="{{ $d->longitude }}" readonly>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="latitude{{ $d->id }}">Latitude</label>
-                                                        <input type="text" class="form-control lat" name="latitude"
-                                                            value="{{ $d->latitude }}" readonly>
-                                                    </div>
-                                                </div>
+                                                <label for="no_hp{{ $user->id }}">Nomor HP</label>
+                                                <input type="text" class="form-control" id="no_hp{{ $user->id }}" name="no_hp"
+                                                    value="{{ $user->no_hp }}" placeholder="Contoh: 08123456789">
                                             </div>
                                             <div class="form-group">
-                                                <label for="harga{{ $d->id }}">Harga <span class="text-danger">*</span></label>
-                                                <input type="number" class="form-control" id="harga{{ $d->id }}" name="harga"
-                                                    value="{{ $d->harga }}" required>
+                                                <label for="tipe_user_id{{ $user->id }}">Tipe User <span class="text-danger">*</span></label>
+                                                <select class="form-control" id="tipe_user_id{{ $user->id }}" name="tipe_user_id" required>
+                                                    <option value="1" {{ $user->tipe_user_id == 1 ? 'selected' : '' }}>
+                                                        Dinas</option>
+                                                    <option value="2" {{ $user->tipe_user_id == 2 ? 'selected' : '' }}>
+                                                        Tenant</option>
+                                                    <option value="3" {{ $user->tipe_user_id == 3 ? 'selected' : '' }}>
+                                                        Pengunjung</option>
+                                                </select>
                                             </div>
                                             <div class="form-group">
-                                                <div style="width: 100%; height:400px;">
-                                                    <div class="map-container-edit" id="map-container-{{ $d->id }}"
-                                                        style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px;">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="tipe_tenant_id{{ $d->id }}">Tipe Tenant <span class="text-danger">*</span></label>
-                                                        <select class="form-control" id="tipe_tenant_id{{ $d->id }}" name="tipe_tenant_id" required>
-                                                            <option value="1" {{ $d->tipe_tenant_id == 1 ? 'selected' : '' }}>
-                                                                Destinasi Wisata</option>
-                                                            <option value="2" {{ $d->tipe_tenant_id == 2 ? 'selected' : '' }}>
-                                                                Rumah Makan</option>
-                                                            <option value="3" {{ $d->tipe_tenant_id == 3 ? 'selected' : '' }}>
-                                                                Hotel</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-group">
-                                                        <label for="is_status_aktif{{ $d->id }}">Status <span class="text-danger">*</span></label>
-                                                        <select class="form-control" id="is_status_aktif{{ $d->id }}" name="is_status_aktif" required>
-                                                            <option value="1" {{ $d->is_status_aktif == 1 ? 'selected' : '' }}>
-                                                                Aktif</option>
-                                                            <option value="0" {{ $d->is_status_aktif == 0 ? 'selected' : '' }}>
-                                                                Tidak Aktif</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
+                                                <label for="tenant{{ $user->id }}">Tenant</label>
+                                                <select class="form-control" id="tenant{{ $user->id }}" name="tenant">
+                                                    <option value="">Pilih Tenant (Opsional)</option>
+                                                    @foreach ($tenant as $t)
+                                                        @php
+                                                            $selected = '';
+                                                            if (isset($user->tenant) && $user->tenant->id == $t->id) {
+                                                                $selected = 'selected';
+                                                            }
+                                                        @endphp
+                                                        <option value="{{ $t->id }}" {{ $selected }}>
+                                                            {{ $t->nama }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <small class="form-text text-muted">Hanya diperlukan untuk user dengan tipe "Tenant"</small>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -201,88 +173,58 @@
         <!-- /.card-body -->
     </div>
 
-    <!-- Modal Tambah Tenant -->
+    <!-- Modal Tambah User -->
     <div class="modal fade" id="modal-default">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title">
-                        <i class="fas fa-plus"></i> Tambah Tenant Baru
+                        <i class="fas fa-user-plus"></i> Tambah Pengguna Baru
                     </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('tenant.store') }}" method="POST" id="addTenantForm">
+                    <form action="{{ route('user.store') }}" method="POST" id="addUserForm">
                         @csrf
                         <div class="form-group">
                             <label for="nama">Nama <span class="text-danger">*</span></label>
-                            <input name="nama" type="text" class="form-control" id="nama"
-                                placeholder="Masukkan nama tenant" required value="{{ old('nama') }}">
+                            <input type="text" class="form-control" id="nama" name="nama" 
+                                placeholder="Masukkan nama lengkap" required value="{{ old('nama') }}">
                         </div>
                         <div class="form-group">
-                            <label for="alamat">Alamat <span class="text-danger">*</span></label>
-                            <input name="alamat" type="text" class="form-control" id="alamat"
-                                placeholder="Masukkan alamat tenant" required value="{{ old('alamat') }}">
+                            <label for="email">Email <span class="text-danger">*</span></label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                placeholder="contoh@email.com" required value="{{ old('email') }}">
                         </div>
                         <div class="form-group">
-                            <label for="deskripsi">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" id="deskripsi" placeholder="Masukkan deskripsi tenant" rows="3">{{ old('deskripsi') }}</textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="latitude">Latitude</label>
-                                    <input name="latitude" type="text" class="form-control lat" id="latitude"
-                                        placeholder="Klik pada peta" readonly required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="longitude">Longitude</label>
-                                    <input name="longitude" type="text" class="form-control long" id="longitude"
-                                        placeholder="Klik pada peta" readonly required>
-                                </div>
-                            </div>
+                            <label for="no_hp">Nomor HP</label>
+                            <input type="text" class="form-control" id="no_hp" name="no_hp" 
+                                placeholder="08123456789" value="{{ old('no_hp') }}">
                         </div>
                         <div class="form-group">
-                            <div style="width: 100%; height:400px;">
-                                <div id="map-container-create"
-                                    style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px;">
-                                </div>
-                            </div>
-                            <small class="form-text text-muted">Klik pada peta untuk menentukan lokasi tenant</small>
+                            <label for="tipe_user_id">Tipe User <span class="text-danger">*</span></label>
+                            <select class="form-control" id="tipe_user_id" name="tipe_user_id" required>
+                                <option value="">Pilih Tipe User</option>
+                                <option value="1" {{ old('tipe_user_id') == '1' ? 'selected' : '' }}>Dinas</option>
+                                <option value="2" {{ old('tipe_user_id') == '2' ? 'selected' : '' }}>Tenant</option>
+                                <option value="3" {{ old('tipe_user_id') == '3' ? 'selected' : '' }}>Pengunjung</option>
+                            </select>
                         </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="tipe_tenant_id">Tipe Tenant <span class="text-danger">*</span></label>
-                                    <select name="tipe_tenant_id" class="form-control" id="tipe_tenant_id" required>
-                                        <option value="">Pilih Tipe Tenant</option>
-                                        <option value="1" {{ old('tipe_tenant_id') == '1' ? 'selected' : '' }}>Destinasi Wisata</option>
-                                        <option value="2" {{ old('tipe_tenant_id') == '2' ? 'selected' : '' }}>Rumah Makan</option>
-                                        <option value="3" {{ old('tipe_tenant_id') == '3' ? 'selected' : '' }}>Hotel</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="harga">Harga <span class="text-danger">*</span></label>
-                                    <input name="harga" type="number" class="form-control" id="harga"
-                                        placeholder="Masukkan harga" required value="{{ old('harga') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label for="is_status_aktif">Status <span class="text-danger">*</span></label>
-                                    <select name="is_status_aktif" class="form-control" id="is_status_aktif" required>
-                                        <option value="">Pilih Status</option>
-                                        <option value="1" {{ old('is_status_aktif') == '1' ? 'selected' : '' }}>Aktif</option>
-                                        <option value="0" {{ old('is_status_aktif') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label for="tenant_id">Tenant</label>
+                            <select class="form-control" id="tenant_id" name="tenant_id">
+                                <option value="">Pilih Tenant (Opsional)</option>
+                                @foreach ($tenant as $t)
+                                    <option value="{{ $t->id }}" {{ old('tenant_id') == $t->id ? 'selected' : '' }}>
+                                        {{ $t->nama }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">
+                                Hanya diperlukan untuk user dengan tipe "Tenant". Password default: <strong>12345678</strong>
+                            </small>
                         </div>
                         
                         <div class="modal-footer px-0">
@@ -299,18 +241,33 @@
         </div>
     </div>
 
-    <!-- Form tersembunyi untuk aksi hapus tenant -->
-    <form id="deleteTenantForm" method="POST" style="display: none;">
+    <!-- Form tersembunyi untuk aksi reset password -->
+    <form id="resetPasswordForm" method="POST" style="display: none;">
+        @csrf
+        @method('POST')
+    </form>
+
+    <!-- Form tersembunyi untuk aksi hapus user -->
+    <form id="deleteUserForm" method="POST" style="display: none;">
         @csrf
         @method('DELETE')
     </form>
 
     <script>
-        // Fungsi untuk hapus tenant
-        function deleteTenant(tenantId, tenantName) {
-            if (confirm('Apakah Anda yakin ingin menghapus tenant "' + tenantName + '"?\n\nAksi ini tidak dapat dibatalkan dan akan menghapus semua data terkait tenant tersebut.')) {
-                const form = document.getElementById('deleteTenantForm');
-                form.action = "{{ route('tenant.destroy', '') }}/" + tenantId;
+        // Fungsi untuk reset password
+        function resetPassword(userId, userName) {
+            if (confirm('Apakah Anda yakin ingin mereset password untuk user "' + userName + '" ke default (12345678)?')) {
+                const form = document.getElementById('resetPasswordForm');
+                form.action = "{{ url('user/reset-password') }}/" + userId;
+                form.submit();
+            }
+        }
+
+        // Fungsi untuk hapus user
+        function deleteUser(userId, userName) {
+            if (confirm('Apakah Anda yakin ingin menghapus user "' + userName + '"?\n\nAksi ini tidak dapat dibatalkan dan akan menghapus semua data terkait user tersebut.')) {
+                const form = document.getElementById('deleteUserForm');
+                form.action = "{{ route('user.destroy', '') }}/" + userId;
                 form.submit();
             }
         }
@@ -321,185 +278,37 @@
                 $('.alert').fadeOut('slow');
             }, 5000);
 
-            const table = $("#table-tenant").DataTable({
-                "responsive": true,
-                "lengthChange": false,
-                "autoWidth": false,
-                "searching": true,
-                "ordering": true,
-                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
-                }
-            });
-
-            // Function to initialize edit button click events
-            function initializeEditButtons() {
-                $('.btn-edit').off('click').on('click', function() {
-                    const targetModal = $(this).attr('data-target');
-                    const lat = $(this).attr('lat');
-                    const long = $(this).attr('long');
-
-                    // Show the modal
-                    $(targetModal).modal('show');
-
-                    // Initialize the map after the modal is fully shown
-                    $(targetModal).on('shown.bs.modal', function() {
-                        const containerId = $(targetModal).find('.map-container-edit').attr('id');
-                        console.log(containerId);
-                        process(lat, long, containerId);
-                    });
-                });
-            }
-
-            // Initialize edit buttons on page load
-            initializeEditButtons();
-
-            // Reinitialize edit buttons after DataTables redraw
-            table.on('draw', function() {
-                initializeEditButtons();
-            });
-
-            $('#tambah').on('click', function() {
-                $('#modal-default').modal('show');
-
-                // Initialize the map after the modal is fully shown
-                $('#modal-default').on('shown.bs.modal', function() {
-                    process(null, null, 'map-container-create');
-                });
-            });
-
-            function process(lat, long, container_id) {
-                const initialLat = lat ? parseFloat(lat).toFixed(10) : -7.6298;
-                const initialLong = long ? parseFloat(long).toFixed(10) : 111.5130;
-
-                // Initialize the map
-                const map = L.map(container_id).setView([initialLat, initialLong], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
-
-                setTimeout(function() {
-                    map.invalidateSize();
-                }, 0);
-
-                let marker;
-                if (lat && long) {
-                    marker = L.marker([initialLat, initialLong]).addTo(map);
-                }
-
-                map.on('click', function(e) {
-                    if (marker) {
-                        map.removeLayer(marker);
+            // DataTable initialization if you're using it
+            if (typeof $('#example1').DataTable === 'function') {
+                $('#example1').DataTable({
+                    "responsive": true,
+                    "lengthChange": false,
+                    "autoWidth": false,
+                    "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
                     }
-                    marker = L.marker(e.latlng).addTo(map);
-
-                    const activeModal = document.querySelector('.modal.show');
-                    if (activeModal) {
-                        const latInput = activeModal.querySelector('.lat');
-                        const longInput = activeModal.querySelector('.long');
-                        if (latInput && longInput) {
-                            latInput.value = e.latlng.lat.toFixed(6);
-                            longInput.value = e.latlng.lng.toFixed(6);
-                        }
-                    }
-                });
-
-                const geocoder = L.Control.geocoder({
-                    defaultMarkGeocode: false,
-                    placeholder: 'Cari lokasi atau desa...',
-                    position: 'topleft',
-                }).addTo(map);
-
-                geocoder.on('markgeocode', function(e) {
-                    const latlng = e.geocode.center;
-
-                    if (marker) {
-                        map.removeLayer(marker);
-                    }
-
-                    marker = L.marker(latlng).addTo(map);
-                    map.setView(latlng, 16);
-
-                    const activeModal = document.querySelector('.modal.show');
-                    if (activeModal) {
-                        const latInput = activeModal.querySelector('.lat');
-                        const longInput = activeModal.querySelector('.long');
-                        if (latInput && longInput) {
-                            latInput.value = latlng.lat.toFixed(6);
-                            longInput.value = latlng.lng.toFixed(6);
-                        }
-                    }
-                });
-
-                const locationButton = L.control({
-                    position: 'topleft'
-                });
-                locationButton.onAdd = function(map) {
-                    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                    div.innerHTML = `
-<a href="#" title="Get Current Location" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:white; text-decoration:none;">
-<i class="fas fa-location-arrow"></i>
-</a>
-`;
-
-                    div.onclick = function(e) {
-                        e.preventDefault();
-                        if ("geolocation" in navigator) {
-                            navigator.geolocation.getCurrentPosition(function(position) {
-                                const lat = position.coords.latitude;
-                                const lng = position.coords.longitude;
-
-                                // Update map view
-                                map.setView([lat, lng], 15);
-
-                                // Update marker
-                                if (marker) {
-                                    map.removeLayer(marker);
-                                }
-                                marker = L.marker([lat, lng]).addTo(map);
-
-                                // Update form inputs
-                                const activeModal = document.querySelector('.modal.show');
-                                if (activeModal) {
-                                    const latInput = activeModal.querySelector('.lat');
-                                    const longInput = activeModal.querySelector('.long');
-                                    if (latInput && longInput) {
-                                        latInput.value = lat.toFixed(6);
-                                        longInput.value = lng.toFixed(6);
-                                    }
-                                }
-                            });
-                        } else {
-                            alert("Geolocation is not supported by your browser");
-                        }
-                    };
-                    return div;
-                };
-                locationButton.addTo(map);
+                }).buttons().container().appendTo('#example1_wrapper .col-md-6:eq(0)');
             }
         });
 
-        // Form validation untuk modal tambah tenant
-        document.getElementById('addTenantForm').addEventListener('submit', function(e) {
+        // Form validation untuk modal tambah user
+        document.getElementById('addUserForm').addEventListener('submit', function(e) {
             const nama = document.getElementById('nama').value.trim();
-            const alamat = document.getElementById('alamat').value.trim();
-            const tipe_tenant = document.getElementById('tipe_tenant_id').value;
-            const harga = document.getElementById('harga').value.trim();
-            const status = document.getElementById('is_status_aktif').value;
-            const latitude = document.getElementById('latitude').value.trim();
-            const longitude = document.getElementById('longitude').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const tipeUser = document.getElementById('tipe_user_id').value;
 
-            if (!nama || !alamat || !tipe_tenant || !harga || !status || !latitude || !longitude) {
+            if (!nama || !email || !tipeUser) {
                 e.preventDefault();
-                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *) dan tentukan lokasi pada peta');
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *)');
                 return false;
             }
 
-            // Harga validation
-            if (isNaN(harga) || parseFloat(harga) < 0) {
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
                 e.preventDefault();
-                alert('Harga harus berupa angka yang valid');
+                alert('Format email tidak valid');
                 return false;
             }
         });
@@ -539,15 +348,6 @@
         
         .form-text {
             margin-top: 0.25rem;
-        }
-
-        .modal-lg {
-            max-width: 800px;
-        }
-
-        #map-container-create, .map-container-edit {
-            border: 1px solid #ddd;
-            border-radius: 4px;
         }
     </style>
 

@@ -6,127 +6,147 @@
         </div>
         <!-- /.card-header -->
         <div class="card-body">
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-check"></i> Berhasil!</h5>
+                    {{ session('success') }}
+                </div>
+            @endif
+            
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @if ($errors->any())
-                <div class="alert alert-danger">
-                    <ul>
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
+                    <ul class="mb-0">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
-            
-            @if (session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
 
-            <button type="button" class="btn btn-primary mb-3" id="tambah" data-toggle="modal">
-                Tambah
+            <button type="button" class="btn btn-primary mb-3" id="tambah" data-toggle="modal" data-target="#modal-default">
+                <i class="fas fa-plus"></i> Tambah Tenant
             </button>
+            
             <table id="table-tenant" class="table table-bordered table-striped">
                 <thead>
                     <tr>
+                        <th style="width: 5%">No</th>
                         <th>Nama</th>
                         <th>Alamat</th>
                         <th>Deskripsi</th>
-                        <th>Longitude</th>
-                        <th>Latitude</th>
                         <th>Tipe Tenant</th>
                         <th>Harga</th>
                         <th>Status</th>
-                        <th>Aksi</th>
+                        <th style="width: 15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($data as $d)
+                    @foreach ($data as $index => $d)
                         <tr>
-                            <td>{{ $d->nama }}</td>
-                            <td>{{ $d->alamat }}</td>
-                            <td>{{ $d->deskripsi }}</td>
-                            <td>{{ $d->latitude }}</td>
-                            <td>{{ $d->longitude }}</td>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $d->nama ?? '-' }}</td>
+                            <td>{{ $d->alamat ?? '-' }}</td>
+                            <td>{{ $d->deskripsi ?? '-' }}</td>
                             <td>
                                 @if ($d->tipe_tenant_id == 1)
-                                    Destinasi wisata
+                                    <span class="badge badge-info">Destinasi wisata</span>
                                 @elseif($d->tipe_tenant_id == 2)
-                                    Rumah makan
+                                    <span class="badge badge-warning">Rumah makan</span>
                                 @elseif($d->tipe_tenant_id == 3)
-                                    Hotel
+                                    <span class="badge badge-primary">Hotel</span>
                                 @endif
                             </td>
-                            <td>{{ $d->harga }}</td>
+                            <td>{{ number_format($d->harga, 0, ',', '.') }}</td>
                             <td>
                                 @if ($d->is_status_aktif == 1)
-                                    Aktif
+                                    <span class="badge badge-success">Aktif</span>
                                 @elseif($d->is_status_aktif == 0)
-                                    Tidak aktif
+                                    <span class="badge badge-secondary">Tidak aktif</span>
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('gambar_tenant.edit', $d->id) }}" class="btn btn-info btn-sm">
-                                    <i class="fas fa-eye"></i> <!-- Ikon untuk Detail -->
+                                <!-- Tombol Detail -->
+                                <a href="{{ route('gambar_tenant.edit', $d->id) }}" class="btn btn-info btn-sm" title="Detail Gambar">
+                                    <i class="fas fa-eye"></i>
                                 </a>
 
+                                <!-- Tombol Edit -->
                                 <button type="button" class="btn btn-warning btn-sm btn-edit" data-toggle="modal"
-                                    _target="#modal-edit-{{ $d->id }}" lat="{{ $d->latitude }}"
-                                    long="{{ $d->longitude }}">
-                                    <i class="fas fa-edit"></i> <!-- Ikon untuk Edit -->
+                                    data-target="#modal-edit-{{ $d->id }}" lat="{{ $d->latitude }}"
+                                    long="{{ $d->longitude }}" title="Edit Tenant">
+                                    <i class="fas fa-edit"></i>
                                 </button>
 
-                                <form action="{{ route('tenant.destroy', $d->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i> <!-- Ikon untuk Hapus -->
-                                    </button>
-                                </form>
+                                <!-- Tombol Hapus -->
+                                <button type="button" class="btn btn-danger btn-sm" 
+                                    onclick="deleteTenant({{ $d->id }}, '{{ $d->nama }}')" title="Hapus Tenant">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
+
+                        <!-- Modal Edit Tenant -->
                         <div class="modal fade" id="modal-edit-{{ $d->id }}" tabindex="-1" role="dialog"
-                            aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog" role="document">
+                            aria-labelledby="modalEditLabel{{ $d->id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
                                 <div class="modal-content">
                                     <form action="{{ route('tenant.update', $d->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="exampleModalLabel">Edit Data</h5>
+                                            <h5 class="modal-title" id="modalEditLabel{{ $d->id }}">
+                                                <i class="fas fa-edit"></i> Edit Tenant: {{ $d->nama }}
+                                            </h5>
                                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                 <span aria-hidden="true">&times;</span>
                                             </button>
                                         </div>
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label for="nama">Nama</label>
-                                                <input type="text" class="form-control" id="nama" name="nama"
-                                                    value="{{ $d->nama }}">
+                                                <label for="nama{{ $d->id }}">Nama <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="nama{{ $d->id }}" name="nama"
+                                                    value="{{ $d->nama }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="alamat">Alamat</label>
-                                                <input type="text" class="form-control" id="alamat" name="alamat"
-                                                    value="{{ $d->alamat }}">
+                                                <label for="alamat{{ $d->id }}">Alamat <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="alamat{{ $d->id }}" name="alamat"
+                                                    value="{{ $d->alamat }}" required>
                                             </div>
                                             <div class="form-group">
-                                                <label for="deskripsi">Deskripsi</label>
-                                                <input type="text" class="form-control" id="deskripsi" name="deskripsi"
-                                                    value="{{ $d->deskripsi }}">
+                                                <label for="deskripsi{{ $d->id }}">Deskripsi</label>
+                                                <textarea class="form-control" id="deskripsi{{ $d->id }}" name="deskripsi" rows="3">{{ $d->deskripsi }}</textarea>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="longitude{{ $d->id }}">Longitude</label>
+                                                        <input type="text" class="form-control long" name="longitude"
+                                                            value="{{ $d->longitude }}" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="latitude{{ $d->id }}">Latitude</label>
+                                                        <input type="text" class="form-control lat" name="latitude"
+                                                            value="{{ $d->latitude }}" readonly>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="form-group">
-                                                <label for="longitude">Longitude</label>
-                                                <input type="text" class="form-control long" name="longitude"
-                                                    value="{{ $d->longitude }}" readonly>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="latitude">Latitude</label>
-                                                <input type="text" class="form-control lat" name="latitude"
-                                                    value="{{ $d->latitude }}" readonly>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="harga">Harga</label>
-                                                <input type="number" class="form-control" name="harga"
-                                                    value="{{ $d->harga }}">
+                                                <label for="harga{{ $d->id }}">Harga <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="harga{{ $d->id }}" name="harga"
+                                                    value="{{ $d->harga }}" required>
                                             </div>
                                             <div class="form-group">
                                                 <div style="width: 100%; height:400px;">
@@ -135,37 +155,40 @@
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            <div class="form-group">
-                                                <label for="tipe_tenant_id">Tipe Tenant</label>
-                                                <select class="form-control" id="tipe_tenant_id" name="tipe_tenant_id">
-                                                    <option value="1" {{ $d->tipe_tenant_id == 1 ? 'selected' : '' }}>
-                                                        Destinasi Wisata</option>
-                                                    <option value="2" {{ $d->tipe_tenant_id == 2 ? 'selected' : '' }}>
-                                                        Rumah Makan</option>
-                                                    <option value="3" {{ $d->tipe_tenant_id == 3 ? 'selected' : '' }}>
-                                                        Hotel</option>
-                                                    <!-- Add other options as necessary -->
-                                                </select>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="tipe_tenant_id{{ $d->id }}">Tipe Tenant <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="tipe_tenant_id{{ $d->id }}" name="tipe_tenant_id" required>
+                                                            <option value="1" {{ $d->tipe_tenant_id == 1 ? 'selected' : '' }}>
+                                                                Destinasi Wisata</option>
+                                                            <option value="2" {{ $d->tipe_tenant_id == 2 ? 'selected' : '' }}>
+                                                                Rumah Makan</option>
+                                                            <option value="3" {{ $d->tipe_tenant_id == 3 ? 'selected' : '' }}>
+                                                                Hotel</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label for="is_status_aktif{{ $d->id }}">Status <span class="text-danger">*</span></label>
+                                                        <select class="form-control" id="is_status_aktif{{ $d->id }}" name="is_status_aktif" required>
+                                                            <option value="1" {{ $d->is_status_aktif == 1 ? 'selected' : '' }}>
+                                                                Aktif</option>
+                                                            <option value="0" {{ $d->is_status_aktif == 0 ? 'selected' : '' }}>
+                                                                Tidak Aktif</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="is_status_aktif">Status</label>
-                                                <select class="form-control" id="is_status_aktif" name="is_status_aktif">
-                                                    <option value="1"
-                                                        {{ $d->is_status_aktif == 1 ? 'selected' : '' }}>
-                                                        Aktif</option>
-                                                    <option value="0"
-                                                        {{ $d->is_status_aktif == 0 ? 'selected' : '' }}>Tidak Aktif
-                                                    </option>
-                                                    <!-- Add other options as necessary -->
-                                                </select>
-                                            </div>
-                                            <!-- Add other fields as necessary -->
                                         </div>
                                         <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary"
-                                                data-dismiss="modal">Tutup</button>
-                                            <button type="submit" class="btn btn-primary">Simpan</button>
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                <i class="fas fa-times"></i> Tutup
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> Simpan Perubahan
+                                            </button>
                                         </div>
                                     </form>
                                 </div>
@@ -178,41 +201,50 @@
         <!-- /.card-body -->
     </div>
 
+    <!-- Modal Tambah Tenant -->
     <div class="modal fade" id="modal-default">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Tambah Tenant</h4>
+                    <h4 class="modal-title">
+                        <i class="fas fa-plus"></i> Tambah Tenant Baru
+                    </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('tenant.store') }}" method="POST">
+                    <form action="{{ route('tenant.store') }}" method="POST" id="addTenantForm">
                         @csrf
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Nama</label>
-                            <input name="nama" type="text" class="form-control" id="exampleInputEmail1"
-                                placeholder="Nama" required>
+                            <label for="nama">Nama <span class="text-danger">*</span></label>
+                            <input name="nama" type="text" class="form-control" id="nama"
+                                placeholder="Masukkan nama tenant" required value="{{ old('nama') }}">
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Alamat</label>
-                            <input name="alamat" type="text" class="form-control" id="exampleInputEmail1"
-                                placeholder="Alamat" required>
+                            <label for="alamat">Alamat <span class="text-danger">*</span></label>
+                            <input name="alamat" type="text" class="form-control" id="alamat"
+                                placeholder="Masukkan alamat tenant" required value="{{ old('alamat') }}">
                         </div>
                         <div class="form-group">
-                            <label for="exampleInputEmail1">Deskripsi</label>
-                            <textarea name="deskripsi" class="form-control" placeholder="Deskripsi" rows="30"></textarea>
+                            <label for="deskripsi">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" id="deskripsi" placeholder="Masukkan deskripsi tenant" rows="3">{{ old('deskripsi') }}</textarea>
                         </div>
-                        <div class="form-group">
-                            <label for="exampleInputEmail1">Latitude</label>
-                            <input name="latitude" type="text" class="form-control lat" id="exampleInputEmail1"
-                                placeholder="Latitude" readonly required>
-                        </div>
-                        <div class="form-group">
-                            <label for="exampleInputEmail1">Longitude</label>
-                            <input name="longitude" type="text" class="form-control long" id="exampleInputEmail1"
-                                placeholder="Longitude" readonly required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude</label>
+                                    <input name="latitude" type="text" class="form-control lat" id="latitude"
+                                        placeholder="Klik pada peta" readonly required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="longitude">Longitude</label>
+                                    <input name="longitude" type="text" class="form-control long" id="longitude"
+                                        placeholder="Klik pada peta" readonly required>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <div style="width: 100%; height:400px;">
@@ -220,52 +252,91 @@
                                     style="height: 100%; width: 100%; display: block; position: relative; margin-bottom: 20px;">
                                 </div>
                             </div>
+                            <small class="form-text text-muted">Klik pada peta untuk menentukan lokasi tenant</small>
                         </div>
-                        <div class="form-group">
-                            <label>Tipe Tenant</label>
-                            <select name="tipe_tenant_id" class="form-control">
-                                <option value="1">Destinasi Wisata</option>
-                                <option value="2">Rumah Makan</option>
-                                <option value="3">Hotel</option>
-                            </select>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="tipe_tenant_id">Tipe Tenant <span class="text-danger">*</span></label>
+                                    <select name="tipe_tenant_id" class="form-control" id="tipe_tenant_id" required>
+                                        <option value="">Pilih Tipe Tenant</option>
+                                        <option value="1" {{ old('tipe_tenant_id') == '1' ? 'selected' : '' }}>Destinasi Wisata</option>
+                                        <option value="2" {{ old('tipe_tenant_id') == '2' ? 'selected' : '' }}>Rumah Makan</option>
+                                        <option value="3" {{ old('tipe_tenant_id') == '3' ? 'selected' : '' }}>Hotel</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="harga">Harga <span class="text-danger">*</span></label>
+                                    <input name="harga" type="number" class="form-control" id="harga"
+                                        placeholder="Masukkan harga" required value="{{ old('harga') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="is_status_aktif">Status <span class="text-danger">*</span></label>
+                                    <select name="is_status_aktif" class="form-control" id="is_status_aktif" required>
+                                        <option value="">Pilih Status</option>
+                                        <option value="1" {{ old('is_status_aktif') == '1' ? 'selected' : '' }}>Aktif</option>
+                                        <option value="0" {{ old('is_status_aktif') == '0' ? 'selected' : '' }}>Tidak Aktif</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="harga">Harga</label>
-                            <input name="harga" type="number" class="form-control" id="harga"
-                                placeholder="Harga" required>
+                        
+                        <div class="modal-footer px-0">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                <i class="fas fa-times"></i> Batal
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label>Status</label>
-                            <select name="is_status_aktif" class="form-control">
-                                <option value="1">Aktif</option>
-                                <option value="0">Tidak Aktif</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </form>
                 </div>
             </div>
-            <!-- /.modal-content -->
         </div>
-        <!-- /.modal-dialog -->
     </div>
-@endsection
 
-@section('script')
+    <!-- Form tersembunyi untuk aksi hapus tenant -->
+    <form id="deleteTenantForm" method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
     <script>
+        // Fungsi untuk hapus tenant
+        function deleteTenant(tenantId, tenantName) {
+            if (confirm('Apakah Anda yakin ingin menghapus tenant "' + tenantName + '"?\n\nAksi ini tidak dapat dibatalkan dan akan menghapus semua data terkait tenant tersebut.')) {
+                const form = document.getElementById('deleteTenantForm');
+                form.action = "{{ route('tenant.destroy', '') }}/" + tenantId;
+                form.submit();
+            }
+        }
+
+        // Auto close alerts after 5 seconds
         $(document).ready(function() {
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
             const table = $("#table-tenant").DataTable({
-                "responsive": false,
+                "responsive": true,
                 "lengthChange": false,
                 "autoWidth": false,
                 "searching": true,
-                "ordering": false,
+                "ordering": true,
+                "buttons": ["copy", "csv", "excel", "pdf", "print", "colvis"],
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
+                }
             });
 
             // Function to initialize edit button click events
             function initializeEditButtons() {
                 $('.btn-edit').off('click').on('click', function() {
-                    const targetModal = $(this).attr('_target');
+                    const targetModal = $(this).attr('data-target');
                     const lat = $(this).attr('lat');
                     const long = $(this).attr('long');
 
@@ -335,237 +406,149 @@
                 });
 
                 const geocoder = L.Control.geocoder({
-                        defaultMarkGeocode: false,
-                        placeholder: 'Cari lokasi atau desa...',
-                        position: 'topleft',
-                    }).addTo(map);
+                    defaultMarkGeocode: false,
+                    placeholder: 'Cari lokasi atau desa...',
+                    position: 'topleft',
+                }).addTo(map);
 
-                    geocoder.on('markgeocode', function(e) {
-                        const latlng = e.geocode.center;
+                geocoder.on('markgeocode', function(e) {
+                    const latlng = e.geocode.center;
 
-                        if (marker) {
-                            map.removeLayer(marker);
-                        }
-
-                        marker = L.marker(latlng).addTo(map);
-                        map.setView(latlng, 16);
-
-                        const activeModal = document.querySelector('.modal.show');
-                        if (activeModal) {
-                            const latInput = activeModal.querySelector('.lat');
-                            const longInput = activeModal.querySelector('.long');
-                            if (latInput && longInput) {
-                                latInput.value = latlng.lat.toFixed(6);
-                                longInput.value = latlng.lng.toFixed(6);
-                            }
-                        }
-                    });
-
-
-                    const locationButton = L.control({
-                        position: 'topleft'
-                    });
-                    locationButton.onAdd = function(map) {
-                        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                        div.innerHTML = `
-<a href="#" title="Get Current Location" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:white; text-decoration:none;">
-<i class="fas fa-location-arrow"></i>
-</a>
-`;
-
-                        div.onclick = function(e) {
-                            e.preventDefault();
-                            if ("geolocation" in navigator) {
-                                navigator.geolocation.getCurrentPosition(function(position) {
-                                    const lat = position.coords.latitude;
-                                    const lng = position.coords.longitude;
-
-                                    // Update map view
-                                    map.setView([lat, lng], 15);
-
-                                    // Update marker
-                                    if (marker) {
-                                        map.removeLayer(marker);
-                                    }
-                                    marker = L.marker([lat, lng]).addTo(map);
-
-                                    // Update form inputs
-                                    const activeModal = document.querySelector('.modal.show');
-                                    if (activeModal) {
-                                        const latInput = activeModal.querySelector('.lat');
-                                        const longInput = activeModal.querySelector('.long');
-                                        if (latInput && longInput) {
-                                            latInput.value = lat.toFixed(6);
-                                            longInput.value = lng.toFixed(6);
-                                        }
-                                    }
-                                });
-                            } else {
-                                alert("Geolocation is not supported by your browser");
-                            }
-                        };
-                        return div;
-                    };
-                    locationButton.addTo(map);
-
-            }
-        });
-    </script>
-@endsection
-
-
-
-
-
-{{-- @section('script')
-    <script>
-        $(document).ready(function() {
-            const table = $("#table-tenant").DataTable({
-                "responsive": false,
-                "lengthChange": false,
-                "autoWidth": false,
-                "searching": false,
-                "ordering": false,
-            });
-
-            // Function to initialize edit button click events
-            function initializeEditButtons() {
-                $('.btn-edit').off('click').on('click', function() {
-                    const targetModal = $(this).attr('_target');
-                    const lat = $(this).attr('lat');
-                    const long = $(this).attr('long');
-                    $(targetModal).modal('show');
-                    process(lat, long, $(targetModal).find('.map-container').attr('id'));
-                });
-            }
-
-            // Initialize edit buttons on page load
-            initializeEditButtons();
-
-            // Reinitialize edit buttons after DataTables redraw
-            table.on('draw', function() {
-                initializeEditButtons();
-            });
-
-            $('#tambah').on('click', function() {
-                $('#modal-default').modal('show');
-                process(null, null, 'map-container-create');
-            });
-
-            function process(lat, long, container_id) {
-                (function() {
-                    const initialLat = lat ? parseFloat(lat).toFixed(10) : -7.6298;
-                    const initialLong = long ? parseFloat(long).toFixed(10) : 111.5130;
-
-                    // Initialize the map
-                    const map = L.map(container_id).setView([initialLat, initialLong], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(map);
-                    setTimeout(function() {
-                        map.invalidateSize();
-                    }, 0);
-                    setTimeout(function() {
-                        window.dispatchEvent(new Event("resize"));
-                    }, 500);
-
-                    const geocoder = L.Control.geocoder({
-                        defaultMarkGeocode: false,
-                        placeholder: 'Cari lokasi atau desa...',
-                        position: 'topleft',
-                    }).addTo(map);
-
-                    let marker;
-                    if (lat && long) {
-                        marker = L.marker([initialLat, initialLong]).addTo(map);
+                    if (marker) {
+                        map.removeLayer(marker);
                     }
 
-                    const locationButton = L.control({
-                        position: 'topleft'
-                    });
-                    locationButton.onAdd = function(map) {
-                        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                        div.innerHTML = `
+                    marker = L.marker(latlng).addTo(map);
+                    map.setView(latlng, 16);
+
+                    const activeModal = document.querySelector('.modal.show');
+                    if (activeModal) {
+                        const latInput = activeModal.querySelector('.lat');
+                        const longInput = activeModal.querySelector('.long');
+                        if (latInput && longInput) {
+                            latInput.value = latlng.lat.toFixed(6);
+                            longInput.value = latlng.lng.toFixed(6);
+                        }
+                    }
+                });
+
+                const locationButton = L.control({
+                    position: 'topleft'
+                });
+                locationButton.onAdd = function(map) {
+                    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                    div.innerHTML = `
 <a href="#" title="Get Current Location" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:white; text-decoration:none;">
 <i class="fas fa-location-arrow"></i>
 </a>
 `;
 
-                        div.onclick = function(e) {
-                            e.preventDefault();
-                            if ("geolocation" in navigator) {
-                                navigator.geolocation.getCurrentPosition(function(position) {
-                                    const lat = position.coords.latitude;
-                                    const lng = position.coords.longitude;
+                    div.onclick = function(e) {
+                        e.preventDefault();
+                        if ("geolocation" in navigator) {
+                            navigator.geolocation.getCurrentPosition(function(position) {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
 
-                                    // Update map view
-                                    map.setView([lat, lng], 15);
+                                // Update map view
+                                map.setView([lat, lng], 15);
 
-                                    // Update marker
-                                    if (marker) {
-                                        map.removeLayer(marker);
+                                // Update marker
+                                if (marker) {
+                                    map.removeLayer(marker);
+                                }
+                                marker = L.marker([lat, lng]).addTo(map);
+
+                                // Update form inputs
+                                const activeModal = document.querySelector('.modal.show');
+                                if (activeModal) {
+                                    const latInput = activeModal.querySelector('.lat');
+                                    const longInput = activeModal.querySelector('.long');
+                                    if (latInput && longInput) {
+                                        latInput.value = lat.toFixed(6);
+                                        longInput.value = lng.toFixed(6);
                                     }
-                                    marker = L.marker([lat, lng]).addTo(map);
-
-                                    // Update form inputs
-                                    const activeModal = document.querySelector('.modal.show');
-                                    if (activeModal) {
-                                        const latInput = activeModal.querySelector('.lat');
-                                        const longInput = activeModal.querySelector('.long');
-                                        if (latInput && longInput) {
-                                            latInput.value = lat.toFixed(6);
-                                            longInput.value = lng.toFixed(6);
-                                        }
-                                    }
-                                });
-                            } else {
-                                alert("Geolocation is not supported by your browser");
-                            }
-                        };
-                        return div;
+                                }
+                            });
+                        } else {
+                            alert("Geolocation is not supported by your browser");
+                        }
                     };
-                    locationButton.addTo(map);
-                    geocoder.on('markgeocode', function(e) {
-                        const latlng = e.geocode.center;
+                    return div;
+                };
+                locationButton.addTo(map);
+            }
+        });
 
-                        if (marker) {
-                            map.removeLayer(marker);
-                        }
+        // Form validation untuk modal tambah tenant
+        document.getElementById('addTenantForm').addEventListener('submit', function(e) {
+            const nama = document.getElementById('nama').value.trim();
+            const alamat = document.getElementById('alamat').value.trim();
+            const tipe_tenant = document.getElementById('tipe_tenant_id').value;
+            const harga = document.getElementById('harga').value.trim();
+            const status = document.getElementById('is_status_aktif').value;
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
 
-                        marker = L.marker(latlng).addTo(map);
-                        map.setView(latlng, 16);
+            if (!nama || !alamat || !tipe_tenant || !harga || !status || !latitude || !longitude) {
+                e.preventDefault();
+                alert('Mohon lengkapi semua field yang wajib diisi (bertanda *) dan tentukan lokasi pada peta');
+                return false;
+            }
 
-                        const activeModal = document.querySelector('.modal.show');
-                        if (activeModal) {
-                            const latInput = activeModal.querySelector('.lat');
-                            const longInput = activeModal.querySelector('.long');
-                            if (latInput && longInput) {
-                                latInput.value = latlng.lat.toFixed(6);
-                                longInput.value = latlng.lng.toFixed(6);
-                            }
-                        }
-                    });
-
-                    // Handle map click events
-                    map.on('click', function(e) {
-                        if (marker) {
-                            map.removeLayer(marker);
-                        }
-
-                        marker = L.marker(e.latlng).addTo(map);
-
-                        const activeModal = document.querySelector('.modal.show');
-                        if (activeModal) {
-                            const latInput = activeModal.querySelector('.lat');
-                            const longInput = activeModal.querySelector('.long');
-                            if (latInput && longInput) {
-                                latInput.value = e.latlng.lat.toFixed(6);
-                                longInput.value = e.latlng.lng.toFixed(6);
-                            }
-                        }
-                    });
-                })();
+            // Harga validation
+            if (isNaN(harga) || parseFloat(harga) < 0) {
+                e.preventDefault();
+                alert('Harga harus berupa angka yang valid');
+                return false;
             }
         });
     </script>
-@endsection --}}
+
+    <style>
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+        
+        .btn-sm {
+            margin: 0 2px;
+        }
+        
+        .badge {
+            font-size: 0.8em;
+        }
+        
+        .modal-header {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .modal-header .close {
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .modal-header .close:hover {
+            opacity: 1;
+        }
+        
+        .text-danger {
+            color: #dc3545 !important;
+        }
+        
+        .form-text {
+            margin-top: 0.25rem;
+        }
+
+        .modal-lg {
+            max-width: 800px;
+        }
+
+        #map-container-create, .map-container-edit {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+
+@endsection
