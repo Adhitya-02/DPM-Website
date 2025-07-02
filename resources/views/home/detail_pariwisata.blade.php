@@ -349,10 +349,16 @@
             color: #667eea;
         }
 
-        .recommendation-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+        /* One-by-One Auto Display Carousel */
+        .recommendation-carousel {
+            position: relative;
+            overflow: hidden;
+            height: 300px; /* Fixed height untuk konsistensi */
+        }
+
+        .recommendation-wrapper {
+            position: relative;
+            height: 100%;
         }
 
         .recommendation-card {
@@ -361,14 +367,67 @@
             overflow: hidden;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s ease;
+            transition: all 0.5s ease;
             border: 1px solid #e9ecef;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideShow 20s infinite;
+        }
+
+        /* Animation untuk 4 item - setiap item muncul 3 detik */
+        .recommendation-card:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .recommendation-card:nth-child(2) {
+            animation-delay: 5s;
+        }
+
+        .recommendation-card:nth-child(3) {
+            animation-delay: 10s;
+        }
+
+        .recommendation-card:nth-child(4) {
+            animation-delay: 15s;
+        }
+
+        @keyframes slideShow {
+            0% {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            8.33% { /* 1/12 = masuk */
+                opacity: 1;
+                transform: translateX(0);
+            }
+            25% { /* 3/12 = tampil penuh */
+                opacity: 1;
+                transform: translateX(0);
+            }
+            33.33% { /* 4/12 = mulai keluar */
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
         }
 
         .recommendation-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-            color: inherit;
+            transform: translateX(0) scale(1.02) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 10;
+            animation-play-state: paused;
+        }
+
+        .recommendation-wrapper:hover .recommendation-card {
+            animation-play-state: paused;
         }
 
         .recommendation-image {
@@ -379,6 +438,10 @@
 
         .recommendation-content {
             padding: 15px;
+            height: calc(100% - 200px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .recommendation-name {
@@ -397,6 +460,90 @@
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
+            flex-grow: 1;
+        }
+
+        /* Progress Indicator */
+        .carousel-progress {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e9ecef;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            animation: progressFill 12s infinite linear;
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            25% { width: 25%; }
+            50% { width: 50%; }
+            75% { width: 75%; }
+            100% { width: 100%; }
+        }
+
+        .carousel-info {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .current-indicator {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            animation: dotActive 12s infinite;
+        }
+
+        .indicator-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .indicator-dot:nth-child(2) {
+            animation-delay: 3s;
+        }
+
+        .indicator-dot:nth-child(3) {
+            animation-delay: 6s;
+        }
+
+        .indicator-dot:nth-child(4) {
+            animation-delay: 9s;
+        }
+
+        @keyframes dotActive {
+            0%, 20% {
+                background: #667eea;
+                transform: scale(1.3);
+            }
+            25%, 100% {
+                background: #cbd5e0;
+                transform: scale(1);
+            }
         }
 
         /* Desktop Layout */
@@ -407,10 +554,6 @@
             }
 
             .recommendations {
-                grid-template-columns: 1fr;
-            }
-
-            .recommendation-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -440,10 +583,6 @@
 
             .recommendations {
                 grid-template-columns: 1fr;
-            }
-
-            .recommendation-grid {
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
         }
 
@@ -499,14 +638,6 @@
 
             .info-item {
                 padding: 12px;
-            }
-
-            .recommendation-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .recommendation-card {
-                margin-bottom: 15px;
             }
 
             .recommendation-image {
@@ -735,19 +866,25 @@
                         <i class="fa-solid fa-utensils"></i>
                         Rumah Makan Terdekat
                     </h3>
-                    <div class="recommendation-grid">
-                        @foreach ($rekomendasi_restorant as $resto)
-                            <a href="{{ route('detail_pariwisata', $resto->id) }}" class="recommendation-card">
-                                <img src="{{ asset('gambar_tenant/' . $resto->gambar_utama()?->gambar) }}" 
-                                     alt="{{ $resto->nama }}" 
-                                     class="recommendation-image"
-                                     loading="lazy">
-                                <div class="recommendation-content">
-                                    <h4 class="recommendation-name">{{ $resto->nama }}</h4>
-                                    <p class="recommendation-description">{{ $resto->deskripsi }}</p>
-                                </div>
-                            </a>
-                        @endforeach
+                    <div class="recommendation-carousel" id="restoCarousel">
+                        <div class="recommendation-wrapper">
+                            @foreach ($rekomendasi_restorant as $resto)
+                                <a href="{{ route('detail_pariwisata', $resto->id) }}" class="recommendation-card">
+                                    <img src="{{ asset('gambar_tenant/' . $resto->gambar_utama()?->gambar) }}" 
+                                         alt="{{ $resto->nama }}" 
+                                         class="recommendation-image"
+                                         loading="lazy"
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGVlMmU2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNHB4IiBmaWxsPSIjNmM3NTdkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+R2FtYmFyIFRpZGFrIERpdGVtdWthbjwvdGV4dD48L3N2Zz4='">
+                                    <div class="recommendation-content">
+                                        <h4 class="recommendation-name">{{ $resto->nama }}</h4>
+                                        <p class="recommendation-description">{{ Str::limit($resto->deskripsi, 100) }}</p>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                        <div class="carousel-info">
+                            <i class="fas fa-info-circle"></i> Hover untuk berhenti • Auto-scroll setiap 3 detik
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -758,19 +895,25 @@
                         <i class="fa-solid fa-hotel"></i>
                         Hotel Terdekat
                     </h3>
-                    <div class="recommendation-grid">
-                        @foreach ($rekomendasi_hotel as $hotel)
-                            <a href="{{ route('detail_pariwisata', $hotel->id) }}" class="recommendation-card">
-                                <img src="{{ asset('gambar_tenant/' . $hotel->gambar_utama()?->gambar) }}" 
-                                     alt="{{ $hotel->nama }}" 
-                                     class="recommendation-image"
-                                     loading="lazy">
-                                <div class="recommendation-content">
-                                    <h4 class="recommendation-name">{{ $hotel->nama }}</h4>
-                                    <p class="recommendation-description">{{ $hotel->deskripsi }}</p>
-                                </div>
-                            </a>
-                        @endforeach
+                    <div class="recommendation-carousel" id="hotelCarousel">
+                        <div class="recommendation-wrapper">
+                            @foreach ($rekomendasi_hotel as $hotel)
+                                <a href="{{ route('detail_pariwisata', $hotel->id) }}" class="recommendation-card">
+                                    <img src="{{ asset('gambar_tenant/' . $hotel->gambar_utama()?->gambar) }}" 
+                                         alt="{{ $hotel->nama }}" 
+                                         class="recommendation-image"
+                                         loading="lazy"
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGVlMmU2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNHB4IiBmaWxsPSIjNmM3NTdkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+R2FtYmFyIFRpZGFrIERpdGVtdWthbjwvdGV4dD48L3N2Zz4='">
+                                    <div class="recommendation-content">
+                                        <h4 class="recommendation-name">{{ $hotel->nama }}</h4>
+                                        <p class="recommendation-description">{{ Str::limit($hotel->deskripsi, 100) }}</p>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                        <div class="carousel-info">
+                            <i class="fas fa-info-circle"></i> Hover untuk berhenti • Auto-scroll setiap 3 detik
+                        </div>
                     </div>
                 </div>
                 @endif
@@ -790,6 +933,8 @@
     </div>
 
     <script>
+        // Simple Auto-Scroll Carousel - No complex JavaScript needed!
+        
         // Add smooth scrolling for better UX
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -847,7 +992,3 @@
                 });
             }
         }
-    </script>
-</body>
-
-</html>
