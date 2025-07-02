@@ -215,15 +215,18 @@
                         <div class="form-group">
                             <label for="tenant_id">Tenant</label>
                             <select class="form-control" id="tenant_id" name="tenant_id">
-                                <option value="">Pilih Tenant (Opsional)</option>
+                                <option value="">Pilih Destinasi Wisata (Opsional)</option>
+                                {{-- Hanya menampilkan tenant dengan tipe_tenant_id = 1 (destinasi wisata) --}}
                                 @foreach ($tenant as $t)
-                                    <option value="{{ $t->id }}" {{ old('tenant_id') == $t->id ? 'selected' : '' }}>
-                                        {{ $t->nama }}
-                                    </option>
+                                    @if ($t->tipe_tenant_id == 1)
+                                        <option value="{{ $t->id }}" {{ old('tenant_id') == $t->id ? 'selected' : '' }}>
+                                            {{ $t->nama }}
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
                             <small class="form-text text-muted">
-                                Hanya diperlukan untuk user dengan tipe "Tenant". Password default: <strong>12345678</strong>
+                                Hanya diperlukan untuk user dengan tipe "Tenant". Pilihan hanya destinasi wisata. Password default: <strong>12345678</strong>
                             </small>
                         </div>
                         
